@@ -4,13 +4,16 @@ import numpy as np
 from overrides import overrides
 from .iface import IValueWithError
 
+
 class ValueWithErrorVec(IValueWithError):
     """Class that remembers all the individual values that makes the mean and SE."""
 
     _values: np.ndarray
+    _estimate_mean: bool
 
-    def __init__(self, values: np.ndarray):
+    def __init__(self, values: np.ndarray, estimate_mean: bool = False):
         self._values = values
+        self._estimate_mean = bool(estimate_mean)
 
     @property
     @overrides
@@ -20,7 +23,10 @@ class ValueWithErrorVec(IValueWithError):
     @property
     @overrides
     def SE(self) -> np.ndarray:
-        return np.std(self._values) / np.sqrt(len(self._values))
+        if self._estimate_mean:
+            return np.std(self._values) / np.sqrt(len(self._values))
+        else:
+            return np.std(self._values)
 
     @property
     def vector(self) -> np.ndarray:
@@ -36,10 +42,9 @@ class ValueWithErrorVec(IValueWithError):
         return len(self._values)
 
 
-
 class ValueWithError(IValueWithError):
     _value: float | np.ndarray
-    _SE: float  | None
+    _SE: float | None
     _N: int | None
 
     def __init__(self, value: float | np.ndarray, SE: float | np.ndarray | None, N: int | np.ndarray | None = None):
@@ -123,8 +128,8 @@ class ValueWithError(IValueWithError):
         return ValueWithError(value, SD, len(observations))
 
 
-
-def make_ValueWithError_from_generator(generator: Iterator[float], N: int | None = None) -> ValueWithError:
+def make_ValueWithError_from_generator(generator: Iterator[float], N: int | None = None,
+                                       estimate_mean: bool = False) -> ValueWithError:
     """
     Creates a ValueWithError from a generator using the inline method.
     :param generator: A generator that returns a float on each iteration.
@@ -141,6 +146,11 @@ def make_ValueWithError_from_generator(generator: Iterator[float], N: int | None
         if N is not None and count >= N:
             break
 
+    if count == 0:
+        raise ValueError("Cannot create ValueWithError from empty generator")
+
     mean = sum / count
     SE = np.sqrt(sumsq / count - mean * mean)
+    if estimate_mean:
+        SE = SE / np.sqrt(count)
     return ValueWithError(mean, SE, count)
