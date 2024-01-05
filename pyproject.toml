@@ -1,0 +1,17 @@
+[tool.poetry]
+name = "ValueWithError"
+version = "1.1.32"
+description = "Simple implementation of the basic concept of Value with Error. No error propagation."
+authors = ["Adam Ryczkowski <adam@statystyka.net>"]
+
+packages = [{ include = "ValueWithError"}]
+
+[tool.poetry.dependencies]
+python = "^3.10"
+numpy = "^1.26.3"
+overrides = "^7.4.0"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
