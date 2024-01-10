@@ -17,6 +17,7 @@ def value_with_error_repr(mean: float, SE: float | None, significant_digit_se: i
             SE = None
 
     if SE is None or np.isclose(SE, 0):
+        SE = None
         absolute_digit = floor(log(abs(mean), 10)) - significant_digit_se + 1
     else:
         absolute_digit = floor(log(abs(SE), 10)) - significant_digit_se + 1

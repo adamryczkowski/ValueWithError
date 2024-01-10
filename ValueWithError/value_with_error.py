@@ -152,7 +152,7 @@ class ValueWithError(IValueWithError):
         self._SE = SE
         self._N = N
 
-    @overrides(check_signature=False) # We are allowing for None in the returned type just for this class
+    @overrides(check_signature=False)  # We are allowing for None in the returned type just for this class
     def get_CI95(self) -> CI95 | None:
         if self.SE is None:
             return None
@@ -163,7 +163,7 @@ class ValueWithError(IValueWithError):
             t = scipy.stats.t.ppf(0.975, self._N - 1)
         return CI95(self.value - t * self.SE, self.value + t * self.SE)
 
-    @overrides(check_signature=False) # We are allowing for None in the returned type just for this class
+    @overrides(check_signature=False)  # We are allowing for None in the returned type just for this class
     def get_CI(self, level: float) -> CI | None:
         if self.SE is None:
             return None
@@ -210,6 +210,47 @@ class ValueWithError(IValueWithError):
             return ans
         else:
             raise ValueError("Cannot estimate SE without N and SE")
+
+
+class ValueWithErrorCI(ValueWithError):
+    """An extension to the ValueWithError that also remembers a single CI."""
+    _ci: I_CI
+
+    def __init__(self, value: float | np.ndarray, SE: float | np.ndarray | None,
+                 ci_lower: float, ci_higher: float, ci_level: float = 0.95,
+                 N: int | np.ndarray | None = None):
+        super().__init__(value, SE, N)
+        if ci_level == 0.95:
+            self._ci = CI95(ci_lower, ci_higher)
+        else:
+            self._ci = CI(ci_lower, ci_higher, ci_level)
+
+    @property
+    def CI(self) -> I_CI:
+        return self._ci
+
+    @CI.setter
+    def CI(self, value: I_CI):
+        assert isinstance(value, I_CI)
+        self._ci = value
+
+    @overrides
+    def __repr__(self):
+        return f"{super().__repr__()} {self._ci}"
+
+    @overrides
+    def get_CI(self, level: float) -> CI | None:
+        if level == self._ci.level:
+            return self._ci
+        else:
+            raise ValueError("Cannot get CI with different level than the one stored")
+
+    @overrides(check_signature=False)
+    def get_CI95(self) -> I_CI:
+        if self._ci.level == 0.95:
+            return self._ci
+        else:
+            raise ValueError("Cannot get CI95 when the stored CI is not 95%")
 
 
 def make_ValueWithError_from_generator(generator: Iterator[float] | np.ndarray, N: int | None = None,

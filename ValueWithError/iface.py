@@ -24,7 +24,7 @@ class IValueWithError(ABC):
         ...
 
     @abstractmethod
-    def get_CI95(self) -> I95CI:
+    def get_CI95(self) -> I_CI:
         ...
 
     @abstractmethod

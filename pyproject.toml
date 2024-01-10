@@ -11,6 +11,7 @@ python = "^3.10"
 numpy = "^1.26.3"
 overrides = "^7.4.0"
 scipy = "^1.11.4"
+pytest = "^7.4.4"
 
 
 [build-system]

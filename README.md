@@ -121,3 +121,19 @@ print(CI_repr(0.123456789, 0.1987654321, significant_digit=3))
 # Prints: (0.1235, 0.1988)
 ```
 
+#### ValueWithErrorCI
+
+Internally ValueWithError stores the value, the error and optionally N - the number of samples used to calculate this statistic. ValueWithErrorCI additionally stores a single confidence interval. It is useful when one wants to store not only a value ± error, but also a single CI inteerval, e.g. when the distribution is not really normal. 
+
+If one does not care about the memory footprint, the ValueWithErrorVec should be used instead, as it stores the whole vector and can calculate any statistic on demand, including percentile CI.
+
+```python
+from ValueWithError import ValueWithErrorCI
+a = ValueWithErrorCI(1.0, 0.1, 0.9, 1.1)
+print(a)
+# Prints: "1.00 ± 0.10 CI_95%: (0.90, 1.10)"
+
+b = ValueWithErrorCI(1.0, 0.1, 0.9, 1.1, ci_level=0.99)
+print(b)
+# Prints: "1.00 ± 0.10 CI_99%: (0.90, 1.10)"
+```
