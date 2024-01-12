@@ -56,6 +56,11 @@ class I_CI(ABC):
             return f"CI_{round(self.level * 1000) / 10}%: {CI_repr(self.lower, self.upper)}"
         return f"CI_{round(self.level * 100)}%: {CI_repr(self.lower, self.upper)}"
 
+    @property
+    def level_txt(self)->str:
+        if 1 - self.level < 0.01:
+            return f"{round(self.level * 1000) / 10}"
+        return f"{round(self.level * 100)}"
 
 class I95CI(I_CI):
     """A class that simply holds two numbers that represent a 95% confidence/credible interval."""

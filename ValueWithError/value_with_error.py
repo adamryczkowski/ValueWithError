@@ -217,13 +217,13 @@ class ValueWithErrorCI(ValueWithError):
     _ci: I_CI
 
     def __init__(self, value: float | np.ndarray, SE: float | np.ndarray | None,
-                 ci_lower: float, ci_higher: float, ci_level: float = 0.95,
+                 ci_lower: float, ci_upper: float, ci_level: float = 0.95,
                  N: int | np.ndarray | None = None):
         super().__init__(value, SE, N)
         if ci_level == 0.95:
-            self._ci = CI95(ci_lower, ci_higher)
+            self._ci = CI95(ci_lower, ci_upper)
         else:
-            self._ci = CI(ci_lower, ci_higher, ci_level)
+            self._ci = CI(ci_lower, ci_upper, ci_level)
 
     @property
     def CI(self) -> I_CI:
