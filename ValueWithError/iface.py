@@ -35,6 +35,10 @@ class IValueWithError(ABC):
         return value_with_error_repr(self.value, self.SE)
 
 
+    def stripCI(self)->IValueWithError:
+        return self
+
+
 class I_CI(ABC):
     @property
     @abstractmethod
@@ -61,6 +65,10 @@ class I_CI(ABC):
         if 1 - self.level < 0.01:
             return f"{round(self.level * 1000) / 10}"
         return f"{round(self.level * 100)}"
+
+    @property
+    def width(self)->float:
+        return self.upper - self.lower
 
 class I95CI(I_CI):
     """A class that simply holds two numbers that represent a 95% confidence/credible interval."""

@@ -212,6 +212,7 @@ class ValueWithError(IValueWithError):
             raise ValueError("Cannot estimate SE without N and SE")
 
 
+
 class ValueWithErrorCI(ValueWithError):
     """An extension to the ValueWithError that also remembers a single CI."""
     _ci: I_CI
@@ -251,6 +252,9 @@ class ValueWithErrorCI(ValueWithError):
             return self._ci
         else:
             raise ValueError("Cannot get CI95 when the stored CI is not 95%")
+
+    def stripCI(self)->ValueWithError:
+        return ValueWithError(self._value, self._SE, self._N)
 
 
 def make_ValueWithError_from_generator(generator: Iterator[float] | np.ndarray, N: int | None = None,
