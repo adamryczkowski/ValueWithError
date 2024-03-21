@@ -90,6 +90,8 @@ class CI(I_CI):
     def upper(self) -> float | np.ndarray:
         return self._upper
 
+
+
     @property
     @overrides
     def level(self) -> float:
@@ -122,6 +124,8 @@ class CI95(I95CI):
     @overrides
     def upper(self) -> float | np.ndarray:
         return self._upper
+
+
 
 
 class ValueWithError(IValueWithError):
