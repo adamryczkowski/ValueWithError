@@ -31,6 +31,11 @@ class IValueWithError(ABC):
     def estimateSE(self) -> IValueWithError:
         ...
 
+    @abstractmethod
+    def estimateMean(self) -> IValueWithError:
+        ...
+
+
     def __repr__(self) -> str:
         return value_with_error_repr(self.value, self.SE)
 

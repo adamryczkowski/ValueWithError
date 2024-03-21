@@ -12,11 +12,9 @@ class ValueWithErrorVec(IValueWithError):
     """Class that remembers all the individual values that makes the mean and SE."""
 
     _values: np.ndarray
-    _estimate_mean: bool
 
-    def __init__(self, values: np.ndarray, estimate_mean: bool = False):
+    def __init__(self, values: np.ndarray):
         self._values = values
-        self._estimate_mean = bool(estimate_mean)
 
     @property
     @overrides
@@ -26,10 +24,7 @@ class ValueWithErrorVec(IValueWithError):
     @property
     @overrides
     def SE(self) -> np.ndarray:
-        if self._estimate_mean:
-            return np.std(self._values) / np.sqrt(len(self._values))
-        else:
-            return np.std(self._values)
+        return np.std(self._values)
 
     @property
     def vector(self) -> np.ndarray:
@@ -40,6 +35,13 @@ class ValueWithErrorVec(IValueWithError):
         se = self.SE
         ans = ValueWithError(se, se * np.sqrt(0.5 / (len(self._values) - 1)))
         return ans
+
+    @overrides
+    def estimateMean(self) -> IValueWithError:
+        se = np.std(self._values) / np.sqrt(len(self._values))
+        ans = ValueWithError(self.value, se)
+        return ans
+
 
     def __len__(self):
         return len(self._values)
@@ -210,6 +212,16 @@ class ValueWithError(IValueWithError):
             return ans
         else:
             raise ValueError("Cannot estimate SE without N and SE")
+
+
+    @overrides
+    def estimateMean(self) -> IValueWithError:
+        if self._N is not None and self._SE is not None:
+            se = self.SE / self._N
+            ans = ValueWithError(self.value, se)
+        else:
+            raise ValueError("Cannot estimate Value without N and SE")
+        return ans
 
 
 

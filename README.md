@@ -22,30 +22,39 @@ vec = np.random.normal(123456, 10, 100)
 b = ValueWithErrorVec(vec)
 
 print(b)
-# Prints: 123456 ± 10
+# Prints: 123456 ± 11
 print(b.get_CI95())
-# Prints: CI_95%: (123441, 123475)
+# Prints: CI_95%: (123436, 123476)
 ```
 
-`ValueWithErrorVec` is a class that calculates the value with error of a vector of values and stores that vector for potential later use. Standard error can be defined in two ways: 
+`ValueWithErrorVec` is a class that calculates the value with error of a vector of values and stores that vector for potential later use.  
 
-* Standard deviation of the vector (the default)
-* Standard error of the mean of the vector (if `estimate_mean=True` is passed to the constructor)
+Confidence intervals for the ValueWithErrorVec are calculated using percentiles, not the normal distribution.
 
-Confidence intervals for the ValueWithErrorVec are calculated using percentiles. 
+Standard error is defined as standard deviation of the vector.
+
+To get the standard error of the mean, use the `.estimateMean()` method to get `ValueWithError` that represents estimate of Mean. 
+This estimator is assumed to be normal/student.
+Similarly `.estimateSE()` returns the standard error of the mean estimator, which is, for simplicity, also assumed normal/student.
+
+
+
 
 ```python
 import numpy as np
 from ValueWithError import ValueWithErrorVec
-vec = np.random.normal(123456, 10, 100)
-b = ValueWithErrorVec(vec, estimate_mean=True)
 
-print(b)
-# Prints: 123457.59 ± 0.95
-print(b.get_CI95())
-# Prints: CI_95%: (123437, 123475)
-print(b.get_CI(0.995))
-# Prints: CI_99.5%: (123428, 123441)
+vec = np.random.normal(123456, 10, 100)
+b = ValueWithErrorVec(vec)
+
+print(b.estimateMean())
+# Prints: 123456.0 ± 1.1
+print(b.estimateSE())
+# Prints: 11.39 ± 0.81
+print(b.estimateMean().get_CI95())
+# Prints: CI_95%: (123453.8, 123458.2)
+print(b.estimateMean().get_CI(0.995))
+# Prints: CI_99.5%: (123452.8, 123459.2)
 
 ```
 
