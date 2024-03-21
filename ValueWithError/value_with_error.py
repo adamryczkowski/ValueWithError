@@ -129,9 +129,8 @@ class ValueWithError(IValueWithError):
     _SE: float | None
     _N: int | None
 
-    def CreateFromVector(generator: Iterator[float] | np.ndarray, N: int | None = None,
-                         estimate_mean: bool = False) -> ValueWithError:
-        return make_ValueWithError_from_generator(generator, N, estimate_mean)
+    def CreateFromVector(generator: Iterator[float] | np.ndarray, N: int | None = None) -> ValueWithError:
+        return make_ValueWithError_from_generator(generator, N)
 
     def __init__(self, value: float | np.ndarray, SE: float | np.ndarray | None, N: int | np.ndarray | None = None):
         if isinstance(value, np.ndarray):

@@ -35,12 +35,13 @@ class IValueWithError(ABC):
     def estimateMean(self) -> IValueWithError:
         ...
 
-
     def __repr__(self) -> str:
         return value_with_error_repr(self.value, self.SE)
 
+    def repr(self, suppress_se: bool = False) -> str:
+        return value_with_error_repr(self.value, self.SE, suppress_se)
 
-    def stripCI(self)->IValueWithError:
+    def stripCI(self) -> IValueWithError:
         return self
 
 
@@ -66,14 +67,15 @@ class I_CI(ABC):
         return f"CI_{round(self.level * 100)}%: {CI_repr(self.lower, self.upper)}"
 
     @property
-    def level_txt(self)->str:
+    def level_txt(self) -> str:
         if 1 - self.level < 0.01:
             return f"{round(self.level * 1000) / 10}"
         return f"{round(self.level * 100)}"
 
     @property
-    def width(self)->float:
+    def width(self) -> float:
         return self.upper - self.lower
+
 
 class I95CI(I_CI):
     """A class that simply holds two numbers that represent a 95% confidence/credible interval."""
@@ -85,4 +87,3 @@ class I95CI(I_CI):
 
     def __repr__(self) -> str:
         return f"CI_95%: {CI_repr(self.lower, self.upper)}"
-
