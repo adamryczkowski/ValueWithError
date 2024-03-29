@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "ValueWithError"
-version = "1.4.3"
+version = "1.4.4"
 description = "Simple implementation of the basic concept of Value with Error. No error propagation."
 authors = ["Adam Ryczkowski <adam@statystyka.net>"]
 

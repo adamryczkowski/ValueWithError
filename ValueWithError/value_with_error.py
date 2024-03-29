@@ -27,6 +27,11 @@ class ValueWithErrorVec(IValueWithError):
         return np.std(self._values)
 
     @property
+    @overrides
+    def N(self) -> int | None:
+        return len(self._values)
+
+    @property
     def vector(self) -> np.ndarray:
         return self._values
 
@@ -41,7 +46,6 @@ class ValueWithErrorVec(IValueWithError):
         se = np.std(self._values) / np.sqrt(len(self._values))
         ans = ValueWithError(self.value, se)
         return ans
-
 
     def __len__(self):
         return len(self._values)
@@ -90,8 +94,6 @@ class CI(I_CI):
     def upper(self) -> float | np.ndarray:
         return self._upper
 
-
-
     @property
     @overrides
     def level(self) -> float:
@@ -124,8 +126,6 @@ class CI95(I95CI):
     @overrides
     def upper(self) -> float | np.ndarray:
         return self._upper
-
-
 
 
 class ValueWithError(IValueWithError):
@@ -184,6 +184,11 @@ class ValueWithError(IValueWithError):
     def value(self) -> float:
         return self._value
 
+    @property
+    @overrides
+    def N(self) -> int | None:
+        return self._N
+
     @value.setter
     def value(self, value: float | np.ndarray):
         if isinstance(value, np.ndarray):
@@ -216,7 +221,6 @@ class ValueWithError(IValueWithError):
         else:
             raise ValueError("Cannot estimate SE without N and SE")
 
-
     @overrides
     def estimateMean(self) -> IValueWithError:
         if self._N is not None and self._SE is not None:
@@ -225,7 +229,6 @@ class ValueWithError(IValueWithError):
         else:
             raise ValueError("Cannot estimate Value without N and SE")
         return ans
-
 
 
 class ValueWithErrorCI(ValueWithError):
@@ -268,7 +271,7 @@ class ValueWithErrorCI(ValueWithError):
         else:
             raise ValueError("Cannot get CI95 when the stored CI is not 95%")
 
-    def stripCI(self)->ValueWithError:
+    def stripCI(self) -> ValueWithError:
         return ValueWithError(self._value, self._SE, self._N)
 
 

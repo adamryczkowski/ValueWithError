@@ -19,6 +19,11 @@ class IValueWithError(ABC):
     def SE(self) -> float | np.ndarray | None:
         ...
 
+    @property
+    @abstractmethod
+    def N(self) -> int | None:
+        ...
+
     @abstractmethod
     def get_CI(self, level: float) -> I_CI:
         ...
@@ -56,7 +61,6 @@ class I_CI(ABC):
     def upper(self) -> float | np.ndarray:
         ...
 
-
     @property
     @abstractmethod
     def level(self) -> float:
@@ -86,7 +90,6 @@ class I_CI(ABC):
         return value_with_error_repr(self.upper, self.width, suppress_se=True)
 
 
-
 class I95CI(I_CI):
     """A class that simply holds two numbers that represent a 95% confidence/credible interval."""
 
@@ -97,4 +100,3 @@ class I95CI(I_CI):
 
     def __repr__(self) -> str:
         return f"CI_95%: {CI_repr(self.lower, self.upper)}"
-
