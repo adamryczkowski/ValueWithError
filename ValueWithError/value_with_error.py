@@ -12,9 +12,14 @@ class ValueWithErrorVec(IValueWithError):
     """Class that remembers all the individual values that makes the mean and SE."""
 
     _values: np.ndarray
+    _len: float|int
 
-    def __init__(self, values: np.ndarray):
+    def __init__(self, values: np.ndarray, override_len: float|int = None):
         self._values = values
+        if override_len is not None:
+            self._len = override_len
+        else:
+            self._len = len(values)
 
     @property
     @overrides
@@ -29,7 +34,7 @@ class ValueWithErrorVec(IValueWithError):
     @property
     @overrides
     def N(self) -> int | None:
-        return len(self._values)
+        return self._len
 
     @property
     def vector(self) -> np.ndarray:
@@ -38,12 +43,12 @@ class ValueWithErrorVec(IValueWithError):
     @overrides
     def estimateSE(self) -> IValueWithError:
         se = self.SE
-        ans = ValueWithError(se, se * np.sqrt(0.5 / (len(self._values) - 1)))
+        ans = ValueWithError(se, se * np.sqrt(0.5 / (self.N - 1)))
         return ans
 
     @overrides
     def estimateMean(self) -> IValueWithError:
-        se = np.std(self._values) / np.sqrt(len(self._values))
+        se = np.std(self._values) / np.sqrt(self.N)
         ans = ValueWithError(self.value, se)
         return ans
 
