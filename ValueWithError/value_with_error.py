@@ -152,7 +152,7 @@ class ValueWithError(IValueWithError):
             SE = float(SE)
 
         if N is not None:
-            assert isinstance(N, int) or isinstance(N, np.ndarray)
+            assert isinstance(N, (int, np.int64)) or isinstance(N, np.ndarray)
             if isinstance(N, np.ndarray):
                 assert len(N.shape) == 1
                 assert len(N) == 1
