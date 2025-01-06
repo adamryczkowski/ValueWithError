@@ -5,19 +5,21 @@ This library provides a class for storing values with errors and nicely printing
 ### Usage
 
 ```python
-from ValueWithError import ValueWithError, ValueWithErrorVec
+from ValueWithError import ImplValueWithError, ValueWithErrorVec
 
-a = ValueWithError(1.0, 0.1)
-print(a) 
+a = ImplValueWithError(1.0, 0.1)
+print(a)
 # Prints: 1.00 ± 0.10
-print(a.get_CI95()) # 95% confidence interval calculated assuming normal distribution. 
+print(a.get_CI95())  # 95% confidence interval calculated assuming normal distribution. 
 # Prints: CI_95%: (0.80, 1.20)
 
-a = ValueWithError(1.0, 0.1, N = 5) # N is the number of samples used to calculate the value. It is used by the CI calculation.
+a = ImplValueWithError(1.0, 0.1,
+                       N=5)  # N is the number of samples used to calculate the value. It is used by the CI calculation.
 print(a.get_CI95())
 # Prints: CI_95%: (0.72, 1.28) - a bigger interval because of the smaller N
 
 import numpy as np
+
 vec = np.random.normal(123456, 10, 100)
 b = ValueWithErrorVec(vec)
 
@@ -83,8 +85,9 @@ print(timeit(method2, number=10))
 ValueWithError class is designed to handle edge cases gracefully. For example, if the error is zero, the value is printed without the error:
 
 ```python
-from ValueWithError import ValueWithError
-a = ValueWithError(1.0, 0.0)
+from ValueWithError import ImplValueWithError
+
+a = ImplValueWithError(1.0, 0.0)
 print(a)
 # Prints: 1.00
 print(a.get_CI95())
@@ -94,14 +97,15 @@ print(a.get_CI95())
 It also handles NaN and Inf values:
 
 ```python
-from ValueWithError import ValueWithError
+from ValueWithError import ImplValueWithError
 import numpy as np
-a = ValueWithError(np.nan, 0.1)
+
+a = ImplValueWithError(np.nan, 0.1)
 print(a)
 # Prints: NaN
 print(a.get_CI95())
 # Prints: CI_95%: (NaN, NaN)
-b = ValueWithError(np.inf, 0.1)
+b = ImplValueWithError(np.inf, 0.1)
 print(b)
 # Prints: ∞
 print(b.get_CI95())
@@ -111,11 +115,12 @@ print(b.get_CI95())
 If one does not want to print the error, it can be suppressed:
 
 ```python
-from ValueWithError import ValueWithError
-a = ValueWithError(1.0, None)
+from ValueWithError import ImplValueWithError
+
+a = ImplValueWithError(1.0, None)
 print(a)
 # Prints: 1.0
-a.get_CI95() is None 
+a.get_CI95() is None
 # Prints: True
 ```
 
