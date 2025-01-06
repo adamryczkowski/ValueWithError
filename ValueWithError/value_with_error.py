@@ -5,19 +5,37 @@ from typing import Iterator, Optional
 import numpy as np
 from pydantic import BaseModel
 
-from .value_with_error_impl import ImplValueWithError, ImplValueVec, ImplValueWithoutError, ImplValueWithErrorN, \
-    IValueWithError, ImplValueWithErrorCI, CI_95, CI_any
+from .value_with_error_impl import (
+    ImplValueWithError,
+    ImplValueVec,
+    ImplValueWithoutError,
+    ImplValueWithErrorN,
+    IValueWithError,
+    ImplValueWithErrorCI,
+    CI_95,
+    CI_any,
+)
 
 
-def make_ValueWithError(mean: float, SE: float = None, SD: float = None, N: int = None, CI: CI_any | CI_95 = None):
+def make_ValueWithError(
+    mean: float,
+    SE: float = None,
+    SD: float = None,
+    N: int = None,
+    CI: CI_any | CI_95 = None,
+):
     if N is None:
         if SE is None and SD is None:
             obj = ImplValueWithoutError(value=mean)
         else:
-            assert SD is None, "Cannot build ValueWithError with SD. Provide just SE or N instead."
+            assert (
+                SD is None
+            ), "Cannot build ValueWithError with SD. Provide just SE or N instead."
             obj = ImplValueWithError(value=mean, SE=SE)
     elif SD is not None:
-        assert SE is None, "Ambiguous input. Cannot build ValueWithError with both SE and SD. Provide just one."
+        assert (
+            SE is None
+        ), "Ambiguous input. Cannot build ValueWithError with both SE and SD. Provide just one."
         obj = ImplValueWithErrorN(value=mean, SD=SD, N=N)
     elif SE is not None:
         obj = ImplValueWithErrorN(value=mean, SD=SE * np.sqrt(N), N=N)
@@ -28,7 +46,10 @@ def make_ValueWithError(mean: float, SE: float = None, SD: float = None, N: int 
         obj = ImplValueWithErrorCI(obj=obj, CI=CI)
     return ValueWithError(impl=obj)
 
-def make_ValueWithError_from_vector(vector: np.ndarray, N: int = None, CI: CI_any | CI_95 = None):
+
+def make_ValueWithError_from_vector(
+    vector: np.ndarray, N: int = None, CI: CI_any | CI_95 = None
+):
     obj = ImplValueVec(values=vector, N=N)
     if CI is not None:
         obj = ImplValueWithErrorCI(obj=obj, CI=CI)
@@ -37,7 +58,14 @@ def make_ValueWithError_from_vector(vector: np.ndarray, N: int = None, CI: CI_an
 
 class ValueWithError(BaseModel):
     """A class that represents a value with an error."""
-    impl: ImplValueWithError | ImplValueVec | ImplValueWithErrorN | ImplValueWithoutError | ImplValueWithErrorCI
+
+    impl: (
+        ImplValueWithError
+        | ImplValueVec
+        | ImplValueWithErrorN
+        | ImplValueWithoutError
+        | ImplValueWithErrorCI
+    )
 
     @property
     def value(self) -> float:
@@ -81,7 +109,9 @@ class ValueWithError(BaseModel):
         elif self.N is None:
             obj = ImplValueWithoutError(value=self.SE)
         else:
-            obj = ImplValueWithError(value=self.SE, SE=self.SE / np.sqrt(2 * (self.N - 1)))
+            obj = ImplValueWithError(
+                value=self.SE, SE=self.SE / np.sqrt(2 * (self.N - 1))
+            )
         return ValueWithError(impl=obj)
 
     def estimateSD(self) -> Optional[ValueWithError]:
@@ -94,16 +124,19 @@ class ValueWithError(BaseModel):
         return ValueWithError(impl=obj)
 
 
-def make_ValueWithError_from_generator(generator: Iterator[float] | np.ndarray, N: int | None = None,
-                                       estimate_mean: bool = False) -> ImplValueWithError:
+def make_ValueWithError_from_generator(
+    generator: Iterator[float] | np.ndarray,
+    N: int | None = None,
+    estimate_mean: bool = False,
+) -> ImplValueWithError:
     """
     Creates a ValueWithError from a generator using the inline method.
     :param generator: A generator that returns a float on each iteration.
     :param N: The number of iterations to run the generator. Otherwise, we iterate until the generator stops.
     :return: the ValueWithError
     """
-    sum = 0.
-    sumsq = 0.
+    sum = 0.0
+    sumsq = 0.0
     count = 0
     for value in generator:
         sum += value

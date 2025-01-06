@@ -3,15 +3,19 @@ import warnings
 import numpy as np
 
 
-def value_with_error_repr(mean: float, SE: float | None, significant_digit_se: int = 2,
-                          suppress_se: bool = False) -> str:
+def value_with_error_repr(
+    mean: float,
+    SE: float | None,
+    significant_digit_se: int = 2,
+    suppress_se: bool = False,
+) -> str:
     assert SE is None or SE >= 0
 
     if isinf(mean):
-        return f"∞"
+        return "∞"
 
     if isnan(mean):
-        return f"NaN"
+        return "NaN"
 
     if SE is not None:
         if isnan(SE):
@@ -63,12 +67,12 @@ def CI_repr(lower: float, upper: float, significant_digit: int = 2) -> str:
         absolute_digit = floor(log(abs(SE), 10)) - significant_digit + 1
 
     if isnan(lower):
-        round_lower_txt = f"NaN"
+        round_lower_txt = "NaN"
     elif isinf(lower):
         if lower < 0:
-            round_lower_txt = f"-∞"
+            round_lower_txt = "-∞"
         else:
-            round_lower_txt = f"∞"
+            round_lower_txt = "∞"
     else:
         if absolute_digit <= 0:
             round_lower_txt = f"{round(lower, -absolute_digit):.{-absolute_digit}f}"
@@ -76,12 +80,12 @@ def CI_repr(lower: float, upper: float, significant_digit: int = 2) -> str:
             round_lower_txt = f"{round(lower, -absolute_digit):_.0f}"
 
     if isnan(upper):
-        round_upper_txt = f"NaN"
+        round_upper_txt = "NaN"
     elif isinf(upper):
         if upper < 0:
-            round_upper_txt = f"-∞"
+            round_upper_txt = "-∞"
         else:
-            round_upper_txt = f"∞"
+            round_upper_txt = "∞"
     else:
         if absolute_digit <= 0:
             round_upper_txt = f"{round(upper, -absolute_digit):.{-absolute_digit}f}"

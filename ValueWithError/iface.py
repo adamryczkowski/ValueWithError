@@ -9,18 +9,15 @@ from .repr import value_with_error_repr, CI_repr
 class I_CI(ABC):
     @property
     @abstractmethod
-    def level(self) -> float:
-        ...
+    def level(self) -> float: ...
 
     @property
     @abstractmethod
-    def lower(self) -> float:
-        ...
+    def lower(self) -> float: ...
 
     @property
     @abstractmethod
-    def upper(self) -> float:
-        ...
+    def upper(self) -> float: ...
 
     def __repr__(self) -> str:
         if 1 - self.level < 0.01:
@@ -51,8 +48,7 @@ class IValueWithError(ABC):
     # impl: ImplValueWithError
 
     @abstractmethod
-    def __repr__(self):
-        ...
+    def __repr__(self): ...
 
     @property
     @abstractmethod

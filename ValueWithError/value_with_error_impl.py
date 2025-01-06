@@ -13,6 +13,7 @@ from .repr import value_with_error_repr, CI_repr
 
 class ImplValueWithoutError(BaseModel):
     """Value without error, that still implements the IValueWithError interface."""
+
     value: float
 
     def __repr__(self):
@@ -50,13 +51,17 @@ class ImplValueWithError(BaseModel):
 
     @property
     def CI95(self) -> CI_95:
-        return CI_95(lower=self.value - 1.96 * self.SE, upper=self.value + 1.96 * self.SE)
+        return CI_95(
+            lower=self.value - 1.96 * self.SE, upper=self.value + 1.96 * self.SE
+        )
 
     def get_CI(self, level: float = 0.95) -> CI_any | None:
         if level == 0.95:
             return self.CI95
         t = norm_dist.ppf(1 - (1 - level) / 2)
-        return CI_any(lower=self.value - t * self.SE, upper=self.value + t * self.SE, level=level)
+        return CI_any(
+            lower=self.value - t * self.SE, upper=self.value + t * self.SE, level=level
+        )
 
     @property
     def SD(self) -> Optional[float]:
@@ -80,11 +85,15 @@ class ImplValueWithErrorN(BaseModel):
 
     @property
     def CI95(self) -> CI_95:
-        return CI_95(lower=self.value - 1.96 * self.SE, upper=self.value + 1.96 * self.SE)
+        return CI_95(
+            lower=self.value - 1.96 * self.SE, upper=self.value + 1.96 * self.SE
+        )
 
     def get_CI(self, level: float) -> CI_any | None:
         t = t_dist.ppf(1 - (1 - level) / 2, self.N - 1)
-        return CI_any(lower=self.value - t * self.SE, upper=self.value + t * self.SE, level=level)
+        return CI_any(
+            lower=self.value - t * self.SE, upper=self.value + t * self.SE, level=level
+        )
 
     @property
     def SE(self) -> float:
@@ -157,7 +166,9 @@ class CI_95(BaseModel):
         return f"CI_95%: {CI_repr(self.lower, self.upper)}"
 
     @staticmethod
-    def CreateFromVector(generator: Iterator[float] | np.ndarray, N: int | None = None) -> CI_95:
+    def CreateFromVector(
+        generator: Iterator[float] | np.ndarray, N: int | None = None
+    ) -> CI_95:
         v = [x for i, x in enumerate(generator) if N is None or i < N]
         perc = np.percentile(v, [2.5, 97.5])
         return CI_95(lower=perc[0], upper=perc[1])
@@ -175,7 +186,6 @@ class CI_any(BaseModel):
     def __init__(self, lower: float, upper: float, level: float = 0.95, **kwargs):
         super().__init__(lower=lower, upper=upper, level=level, **kwargs)
 
-
     def __repr__(self):
         if 1 - self.level < 0.01:
             return f"CI_{round(self.level * 1000) / 10}%: {CI_repr(self.lower, self.upper)}"
@@ -188,20 +198,28 @@ class CI_any(BaseModel):
         return self
 
     @staticmethod
-    def CreateFromVector(generator: Iterator[float] | np.ndarray, N: int | None = None,
-                         level: float = 0.95) -> CI_95 | CI_any:
+    def CreateFromVector(
+        generator: Iterator[float] | np.ndarray,
+        N: int | None = None,
+        level: float = 0.95,
+    ) -> CI_95 | CI_any:
         v = [x for i, x in enumerate(generator) if N is None or i < N]
 
         perc = np.percentile(v, [(1 - level) / 2, 1 - (1 - level) / 2])
         if level == 0.95:
             return CI_95(lower=perc[0], upper=perc[1], level=0.95)
         else:
-            return CI_any(lower=float(perc[0]), upper=float(perc[1]), level=float(level))
+            return CI_any(
+                lower=float(perc[0]), upper=float(perc[1]), level=float(level)
+            )
 
 
 class ImplValueWithErrorCI(BaseModel):
     """An extension to the ValueWithError that also remembers a single CI."""
-    obj: Union[ImplValueWithError, ImplValueWithErrorN, ImplValueVec, ImplValueWithoutError]
+
+    obj: Union[
+        ImplValueWithError, ImplValueWithErrorN, ImplValueVec, ImplValueWithoutError
+    ]
     CI: Union[CI_95, CI_any]
 
     def __repr__(self):

@@ -10,7 +10,7 @@ from ValueWithError import ImplValueWithError, ValueWithErrorVec
 a = ImplValueWithError(1.0, 0.1)
 print(a)
 # Prints: 1.00 ± 0.10
-print(a.get_CI95())  # 95% confidence interval calculated assuming normal distribution. 
+print(a.get_CI95())  # 95% confidence interval calculated assuming normal distribution.
 # Prints: CI_95%: (0.80, 1.20)
 
 a = ImplValueWithError(1.0, 0.1,
@@ -29,13 +29,13 @@ print(b.get_CI95())
 # Prints: CI_95%: (123436, 123476)
 ```
 
-`ValueWithErrorVec` is a class that calculates the value with error of a vector of values and stores that vector for potential later use.  
+`ValueWithErrorVec` is a class that calculates the value with error of a vector of values and stores that vector for potential later use.
 
 Confidence intervals for the ValueWithErrorVec are calculated using percentiles, not the normal distribution.
 
 Standard error is defined as standard deviation of the vector.
 
-To get the standard error of the mean, use the `.estimateMean()` method to get `ValueWithError` that represents estimate of Mean. 
+To get the standard error of the mean, use the `.estimateMean()` method to get `ValueWithError` that represents estimate of Mean.
 This estimator is assumed to be normal/student.
 Similarly `.estimateSE()` returns the standard error of the mean estimator, which is, for simplicity, also assumed normal/student.
 
@@ -70,7 +70,7 @@ from ValueWithError import ValueWithErrorVec, make_ValueWithError_from_generator
 def random_generator(mean, std, size):
     for i in range(size):
         yield np.random.normal(mean, std)
-        
+
 method1 = lambda : ValueWithErrorVec([v for v in random_generator(123456, 10, 10000)], estimate_mean=True)
 method2 = lambda : make_ValueWithError_from_generator(random_generator(123456, 10, 10000), estimate_mean=True)
 
@@ -137,7 +137,7 @@ print(CI_repr(0.123456789, 0.1987654321, significant_digit=3))
 
 #### ValueWithErrorCI
 
-Internally ValueWithError stores the value, the error and optionally N - the number of samples used to calculate this statistic. ValueWithErrorCI additionally stores a single confidence interval. It is useful when one wants to store not only a value ± error, but also a single CI inteerval, e.g. when the distribution is not really normal. 
+Internally ValueWithError stores the value, the error and optionally N - the number of samples used to calculate this statistic. ValueWithErrorCI additionally stores a single confidence interval. It is useful when one wants to store not only a value ± error, but also a single CI inteerval, e.g. when the distribution is not really normal.
 
 If one does not care about the memory footprint, the ValueWithErrorVec should be used instead, as it stores the whole vector and can calculate any statistic on demand, including percentile CI.
 
