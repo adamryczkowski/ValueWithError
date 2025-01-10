@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Iterator, Optional
+from typing import Iterator, Optional, Union
 
 import numpy as np
 from pydantic import BaseModel
@@ -58,9 +58,9 @@ def make_ValueWithError_from_vector(
 class ValueWithError(BaseModel):
     """A class that represents a value with an error."""
 
-    impl: (
-        ImplValueWithError | ImplValueVec | ImplValueWithErrorN | ImplValueWithoutError
-    )
+    impl: Union[
+        ImplValueWithError, ImplValueVec, ImplValueWithErrorN, ImplValueWithoutError
+    ]
     cis: dict[float, CI_any | CI_95] = {}
 
     @property
