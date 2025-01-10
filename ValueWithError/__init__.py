@@ -6,6 +6,7 @@ from .value_with_error import (
     make_ValueWithError,
     make_ValueWithError_from_vector,
     ValueWithError,
+    VectorOfValues
 )
 
 __all__ = [
@@ -18,4 +19,5 @@ __all__ = [
     "make_ValueWithError",
     "make_ValueWithError_from_vector",
     "ValueWithError",
+    "VectorOfValues",
 ]

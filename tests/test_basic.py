@@ -22,7 +22,6 @@ def test_basic():
     vec = np.random.normal(123456, 10, 100)
     b = make_ValueWithError_from_vector(vector=vec)
 
-    print(b)
     assert repr(b) == "123456 ± 11"
     assert repr(b.CI95) == "CI_95%: (123436, 123478)"
 
@@ -55,10 +54,13 @@ def test_edge2():
 def test_error_with_ci():
     a = make_ValueWithError(1.0, 0.1, CI=CI_95(lower=0.9, upper=1.1))
     assert repr(a) == "1.00 ± 0.10 CI_95%: (0.90, 1.10)"
+    assert repr(a.get_CI(0.99)) == "CI_99%: (0.74, 1.26)"
 
+    b = make_ValueWithError(1.0, CI=CI_95(lower=0.9, upper=1.1))
     # Test for assertion
-    with pytest.raises(ValueError):
-        a.get_CI(0.99)
+    assert repr(b.get_CI(0.95)) == "CI_95%: (0.90, 1.10)"
+
+    assert repr(b.get_CI(0.99)) == "CI_99%: (1.0, 1.0)"
 
     assert repr(a.CI95) == "CI_95%: (0.90, 1.10)"
 

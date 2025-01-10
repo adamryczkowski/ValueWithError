@@ -102,6 +102,10 @@ class ImplValueWithErrorN(BaseModel):
     def stripCI(self) -> IValueWithError:
         return self
 
+    def compressed_copy(self):
+        return self
+
+
 
 class ImplValueVec(BaseModel):
     """Class that remembers all the individual values that makes the mean and SE."""
@@ -142,11 +146,15 @@ class ImplValueVec(BaseModel):
     def CI95(self) -> CI_95:
         return CI_95.CreateFromVector(self.values)
 
-    def get_CI(self, level: float) -> I_CI:
+    def get_CI(self, level: float) -> CI_any:
         return CI_any.CreateFromVector(self.values, level=level)
 
     def stripCI(self) -> IValueWithError:
         return self
+
+    def compressed_copy(self):
+        return ImplValueWithErrorN(value=self.value, SD=self.SD, N=self.N)
+
 
 
 class CI_95(BaseModel):
@@ -253,3 +261,7 @@ class ImplValueWithErrorCI(BaseModel):
 
     def stripCI(self) -> IValueWithError:
         return self.obj
+
+    def compressed_copy(self):
+        impl = self.obj.compressed_copy()
+        return ImplValueWithErrorCI(obj=impl, CI=self.CI)
