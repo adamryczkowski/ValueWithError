@@ -10,7 +10,6 @@ from .value_with_error_impl import (
     ImplValueVec,
     ImplValueWithoutError,
     ImplValueWithErrorN,
-    IValueWithError,
     ImplValueWithErrorCI,
     CI_95,
     CI_any,
@@ -18,23 +17,23 @@ from .value_with_error_impl import (
 
 
 def make_ValueWithError(
-        mean: float,
-        SE: float = None,
-        SD: float = None,
-        N: int = None,
-        CI: CI_any | CI_95 = None,
+    mean: float,
+    SE: float = None,
+    SD: float = None,
+    N: int = None,
+    CI: CI_any | CI_95 = None,
 ):
     if N is None:
         if SE is None and SD is None:
             obj = ImplValueWithoutError(value=mean)
         else:
             assert (
-                    SD is None
+                SD is None
             ), "Cannot build ValueWithError with SD. Provide just SE or N instead."
             obj = ImplValueWithError(value=mean, SE=SE)
     elif SD is not None:
         assert (
-                SE is None
+            SE is None
         ), "Ambiguous input. Cannot build ValueWithError with both SE and SD. Provide just one."
         obj = ImplValueWithErrorN(value=mean, SD=SD, N=N)
     elif SE is not None:
@@ -46,9 +45,10 @@ def make_ValueWithError(
         return ValueWithError(impl=obj, cis={CI.level: CI})
     return ValueWithError(impl=obj)
 
+
 def make_ValueWithError_from_vector(
-        vector: np.ndarray, N: int = None, CI: CI_any | CI_95 = None
-)->VectorOfValues:
+    vector: np.ndarray, N: int = None, CI: CI_any | CI_95 = None
+) -> VectorOfValues:
     obj = ImplValueVec(values=vector, N=N)
     if CI is not None:
         obj = ImplValueWithErrorCI(obj=obj, CI=CI)
@@ -59,10 +59,7 @@ class ValueWithError(BaseModel):
     """A class that represents a value with an error."""
 
     impl: (
-            ImplValueWithError
-            | ImplValueVec
-            | ImplValueWithErrorN
-            | ImplValueWithoutError
+        ImplValueWithError | ImplValueVec | ImplValueWithErrorN | ImplValueWithoutError
     )
     cis: dict[float, CI_any | CI_95] = {}
 
@@ -195,15 +192,17 @@ class VectorOfValues(BaseModel):
         if CI_levels is None:
             CI_levels = []
         obj = ImplValueWithErrorN(value=self.impl.value, SD=self.impl.SD, N=self.impl.N)
-        cis = [CI_any.CreateFromVector(self.impl.values, N=None, level=level) for level in CI_levels]
+        cis = [
+            CI_any.CreateFromVector(self.impl.values, N=None, level=level)
+            for level in CI_levels
+        ]
         return ValueWithError(impl=ImplValueWithErrorCI(obj=obj, cis=cis))
 
 
-
 def make_ValueWithError_from_generator(
-        generator: Iterator[float] | np.ndarray,
-        N: int | None = None,
-        estimate_mean: bool = False,
+    generator: Iterator[float] | np.ndarray,
+    N: int | None = None,
+    estimate_mean: bool = False,
 ) -> ImplValueWithError:
     """
     Creates a ValueWithError from a generator using the inline method.

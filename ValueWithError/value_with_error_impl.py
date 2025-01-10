@@ -106,7 +106,6 @@ class ImplValueWithErrorN(BaseModel):
         return self
 
 
-
 class ImplValueVec(BaseModel):
     """Class that remembers all the individual values that makes the mean and SE."""
 
@@ -154,7 +153,6 @@ class ImplValueVec(BaseModel):
 
     def compressed_copy(self):
         return ImplValueWithErrorN(value=self.value, SD=self.SD, N=self.N)
-
 
 
 class CI_95(BaseModel):

@@ -1,4 +1,3 @@
-import pytest
 import numpy as np
 
 from ValueWithError import make_ValueWithError_from_vector, CI_95, make_ValueWithError
