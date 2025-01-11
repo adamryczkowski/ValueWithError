@@ -10,7 +10,7 @@ from .value_with_error_impl import (
     ImplValueVec,
     ImplValueWithoutError,
     ImplValueWithErrorN,
-    ImplValueWithErrorCI,
+    # ImplValueWithErrorCI,
     CI_95,
     CI_any,
 )
@@ -47,11 +47,9 @@ def make_ValueWithError(
 
 
 def make_ValueWithError_from_vector(
-    vector: np.ndarray, N: int = None, CI: CI_any | CI_95 = None
+    vector: np.ndarray, N: int = None
 ) -> VectorOfValues:
     obj = ImplValueVec(values=vector, N=N)
-    if CI is not None:
-        obj = ImplValueWithErrorCI(obj=obj, CI=CI)
     return VectorOfValues(impl=obj)
 
 
@@ -196,7 +194,7 @@ class VectorOfValues(BaseModel):
             CI_any.CreateFromVector(self.impl.values, N=None, level=level)
             for level in CI_levels
         ]
-        return ValueWithError(impl=ImplValueWithErrorCI(obj=obj, cis=cis))
+        return ValueWithError(impl=obj, cis=cis)
 
 
 def make_ValueWithError_from_generator(

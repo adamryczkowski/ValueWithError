@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Iterator, Optional, Union
+from typing import Iterator, Optional
 
 import numpy as np
 from numpydantic import NDArray, Shape
@@ -220,46 +220,47 @@ class CI_any(BaseModel):
             )
 
 
-class ImplValueWithErrorCI(BaseModel):
-    """An extension to the ValueWithError that also remembers a single CI."""
-
-    obj: Union[
-        ImplValueWithError, ImplValueWithErrorN, ImplValueVec, ImplValueWithoutError
-    ]
-    CI: Union[CI_95, CI_any]
-
-    def __repr__(self):
-        return f"{repr(self.obj)} {repr(self.CI)}"
-
-    def get_CI(self, level: float) -> CI_any | CI_95:
-        if level == self.CI.level:
-            return self.CI
-        else:
-            raise ValueError("Cannot get CI with different level than the one stored")
-
-    @property
-    def CI95(self) -> CI_95:
-        return self.get_CI(0.95)
-
-    @property
-    def value(self) -> float:
-        return self.obj.value
-
-    @property
-    def SE(self) -> Optional[float]:
-        return self.obj.SE
-
-    @property
-    def SD(self) -> Optional[float]:
-        return self.obj.SD
-
-    @property
-    def N(self) -> Optional[int | float]:
-        return self.obj.N
-
-    def stripCI(self) -> IValueWithError:
-        return self.obj
-
-    def compressed_copy(self):
-        impl = self.obj.compressed_copy()
-        return ImplValueWithErrorCI(obj=impl, CI=self.CI)
+#
+# class ImplValueWithErrorCI(BaseModel):
+#     """An extension to the ValueWithError that also remembers a single CI."""
+#
+#     obj: Union[
+#         ImplValueWithError, ImplValueWithErrorN, ImplValueVec, ImplValueWithoutError
+#     ]
+#     CI: Union[CI_95, CI_any]
+#
+#     def __repr__(self):
+#         return f"{repr(self.obj)} {repr(self.CI)}"
+#
+#     def get_CI(self, level: float) -> CI_any | CI_95:
+#         if level == self.CI.level:
+#             return self.CI
+#         else:
+#             raise ValueError("Cannot get CI with different level than the one stored")
+#
+#     @property
+#     def CI95(self) -> CI_95:
+#         return self.get_CI(0.95)
+#
+#     @property
+#     def value(self) -> float:
+#         return self.obj.value
+#
+#     @property
+#     def SE(self) -> Optional[float]:
+#         return self.obj.SE
+#
+#     @property
+#     def SD(self) -> Optional[float]:
+#         return self.obj.SD
+#
+#     @property
+#     def N(self) -> Optional[int | float]:
+#         return self.obj.N
+#
+#     def stripCI(self) -> IValueWithError:
+#         return self.obj
+#
+#     def compressed_copy(self):
+#         impl = self.obj.compressed_copy()
+#         return ImplValueWithErrorCI(obj=impl, CI=self.CI)
