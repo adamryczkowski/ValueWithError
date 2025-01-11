@@ -190,10 +190,10 @@ class VectorOfValues(BaseModel):
         if CI_levels is None:
             CI_levels = []
         obj = ImplValueWithErrorN(value=self.impl.value, SD=self.impl.SD, N=self.impl.N)
-        cis = [
-            CI_any.CreateFromVector(self.impl.values, N=None, level=level)
+        cis = {
+            level: CI_any.CreateFromVector(self.impl.values, N=None, level=level)
             for level in CI_levels
-        ]
+        }
         return ValueWithError(impl=obj, cis=cis)
 
 

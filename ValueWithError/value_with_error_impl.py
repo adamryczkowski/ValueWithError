@@ -155,7 +155,7 @@ class ImplValueVec(BaseModel):
         return ImplValueWithErrorN(value=self.value, SD=self.SD, N=self.N)
 
 
-class CI_95(BaseModel):
+class CI_95(I_CI, BaseModel):
     lower: float
     upper: float
 
@@ -184,7 +184,7 @@ class CI_95(BaseModel):
         return 0.95
 
 
-class CI_any(BaseModel):
+class CI_any(I_CI, BaseModel):
     lower: float
     upper: float
     level: confloat(gt=0, lt=1)
