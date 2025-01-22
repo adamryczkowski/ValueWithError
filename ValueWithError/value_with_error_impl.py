@@ -42,17 +42,17 @@ class ImplValueWithoutError(BaseModel):
         return self
 
 
-class ImplValueWithError(BaseModel):
+class ImplNormalValueWithError(BaseModel):
     value: float
-    SE: confloat(ge=0)
+    SD: confloat(ge=0)
 
     def __repr__(self):
-        return value_with_error_repr(self.value, self.SE)
+        return value_with_error_repr(self.value, self.SD)
 
     @property
     def CI95(self) -> CI_95:
         return CI_95(
-            lower=self.value - 1.96 * self.SE, upper=self.value + 1.96 * self.SE
+            lower=self.value - 1.96 * self.SD, upper=self.value + 1.96 * self.SD
         )
 
     def get_CI(self, level: float = 0.95) -> CI_any | None:
@@ -60,12 +60,12 @@ class ImplValueWithError(BaseModel):
             return self.CI95
         t = norm_dist.ppf(1 - (1 - level) / 2)
         return CI_any(
-            lower=self.value - t * self.SE, upper=self.value + t * self.SE, level=level
+            lower=self.value - t * self.SD, upper=self.value + t * self.SD, level=level
         )
 
-    @property
-    def SD(self) -> Optional[float]:
-        return None
+    # @property
+    # def SD(self) -> Optional[float]:
+    #     return None
 
     @property
     def N(self) -> Optional[int | float]:
@@ -75,29 +75,30 @@ class ImplValueWithError(BaseModel):
         return self
 
 
-class ImplValueWithErrorN(BaseModel):
+class ImplStudentValueWithError(BaseModel):
     value: float
     SD: confloat(ge=0)
     N: conint(ge=1)
 
     def __repr__(self):
-        return value_with_error_repr(self.value, self.SE)
+        return value_with_error_repr(self.value, self.SD)
 
     @property
     def CI95(self) -> CI_95:
         return CI_95(
-            lower=self.value - 1.96 * self.SE, upper=self.value + 1.96 * self.SE
+            lower=self.value - t_dist.ppf(0.975, self.N - 1) * self.SD,
+            upper=self.value + t_dist.ppf(0.975, self.N - 1) * self.SD,
         )
 
     def get_CI(self, level: float) -> CI_any | None:
         t = t_dist.ppf(1 - (1 - level) / 2, self.N - 1)
         return CI_any(
-            lower=self.value - t * self.SE, upper=self.value + t * self.SE, level=level
+            lower=self.value - t * self.SD, upper=self.value + t * self.SD, level=level
         )
 
-    @property
-    def SE(self) -> float:
-        return self.SD / np.sqrt(self.N)
+    # @property
+    # def SE(self) -> float:
+    #     return self.SD / np.sqrt(self.N)
 
     def stripCI(self) -> IValueWithError:
         return self
@@ -130,9 +131,9 @@ class ImplValueVec(BaseModel):
     def SD(self) -> float:
         return float(np.std(self.values))
 
-    @property
-    def SE(self) -> float:
-        return self.SD / np.sqrt(self.N)
+    # @property
+    # def SE(self) -> float:
+    #     return self.SD / np.sqrt(self.N)
 
     def __repr__(self):
         return value_with_error_repr(self.value, self.SD)
@@ -152,7 +153,7 @@ class ImplValueVec(BaseModel):
         return self
 
     def compressed_copy(self):
-        return ImplValueWithErrorN(value=self.value, SD=self.SD, N=self.N)
+        return ImplStudentValueWithError(value=self.value, SD=self.SD, N=self.N)
 
 
 class CI_95(I_CI, BaseModel):
@@ -211,7 +212,7 @@ class CI_any(I_CI, BaseModel):
     ) -> CI_95 | CI_any:
         v = [x for i, x in enumerate(generator) if N is None or i < N]
 
-        perc = np.percentile(v, [(1 - level) / 2, 1 - (1 - level) / 2])
+        perc = np.percentile(v, [(1 - level) * 50, 100 - (1 - level) * 50])
         if level == 0.95:
             return CI_95(lower=perc[0], upper=perc[1], level=0.95)
         else:

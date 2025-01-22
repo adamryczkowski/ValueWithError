@@ -6,10 +6,10 @@ import numpy as np
 from pydantic import BaseModel
 
 from .value_with_error_impl import (
-    ImplValueWithError,
+    ImplNormalValueWithError,
     ImplValueVec,
     ImplValueWithoutError,
-    ImplValueWithErrorN,
+    ImplStudentValueWithError,
     # ImplValueWithErrorCI,
     CI_95,
     CI_any,
@@ -18,28 +18,18 @@ from .value_with_error_impl import (
 
 def make_ValueWithError(
     mean: float,
-    SE: float = None,
     SD: float = None,
     N: int = None,
     CI: CI_any | CI_95 = None,
 ):
-    if N is None:
-        if SE is None and SD is None:
-            obj = ImplValueWithoutError(value=mean)
-        else:
-            assert (
-                SD is None
-            ), "Cannot build ValueWithError with SD. Provide just SE or N instead."
-            obj = ImplValueWithError(value=mean, SE=SE)
-    elif SD is not None:
-        assert (
-            SE is None
-        ), "Ambiguous input. Cannot build ValueWithError with both SE and SD. Provide just one."
-        obj = ImplValueWithErrorN(value=mean, SD=SD, N=N)
-    elif SE is not None:
-        obj = ImplValueWithErrorN(value=mean, SD=SE * np.sqrt(N), N=N)
-    else:
+    if SD is None:
+        assert N is None
         obj = ImplValueWithoutError(value=mean)
+    else:
+        if N is None:
+            obj = ImplNormalValueWithError(value=mean, SD=SD)
+        else:
+            obj = ImplStudentValueWithError(value=mean, SD=SD, N=N)
 
     if CI is not None:
         return ValueWithError(impl=obj, cis={CI.level: CI})
@@ -57,7 +47,10 @@ class ValueWithError(BaseModel):
     """A class that represents a value with an error."""
 
     impl: Union[
-        ImplValueWithError, ImplValueVec, ImplValueWithErrorN, ImplValueWithoutError
+        ImplNormalValueWithError,
+        ImplValueVec,
+        ImplStudentValueWithError,
+        ImplValueWithoutError,
     ]
     cis: dict[float, CI_any | CI_95] = {}
 
@@ -106,7 +99,7 @@ class ValueWithError(BaseModel):
         if self.SE is None or self.N is None:
             obj = ImplValueWithoutError(value=self.value)
         else:
-            obj = ImplValueWithError(value=self.value, SE=self.SE)
+            obj = ImplNormalValueWithError(value=self.value, SE=self.SE)
         return ValueWithError(impl=obj)
 
     def estimateSE(self) -> Optional[ValueWithError]:
@@ -115,7 +108,7 @@ class ValueWithError(BaseModel):
         elif self.N is None:
             obj = ImplValueWithoutError(value=self.SE)
         else:
-            obj = ImplValueWithError(
+            obj = ImplNormalValueWithError(
                 value=self.SE, SE=self.SE / np.sqrt(2 * (self.N - 1))
             )
         return ValueWithError(impl=obj)
@@ -126,7 +119,9 @@ class ValueWithError(BaseModel):
         elif self.N is None:
             obj = ImplValueWithoutError(value=self.SD)
         else:
-            obj = ImplValueWithError(value=self.SD, SE=self.SD / np.sqrt(self.N - 1))
+            obj = ImplNormalValueWithError(
+                value=self.SD, SE=self.SD / np.sqrt(self.N - 1)
+            )
         return ValueWithError(impl=obj)
 
 
@@ -163,7 +158,7 @@ class VectorOfValues(BaseModel):
         if self.SE is None or self.N is None:
             obj = ImplValueWithoutError(value=self.value)
         else:
-            obj = ImplValueWithError(value=self.value, SE=self.SE)
+            obj = ImplNormalValueWithError(value=self.value, SE=self.SE)
         return ValueWithError(impl=obj)
 
     def estimateSE(self) -> Optional[ValueWithError]:
@@ -172,7 +167,7 @@ class VectorOfValues(BaseModel):
         elif self.N is None:
             obj = ImplValueWithoutError(value=self.SE)
         else:
-            obj = ImplValueWithError(
+            obj = ImplNormalValueWithError(
                 value=self.SE, SE=self.SE / np.sqrt(2 * (self.N - 1))
             )
         return ValueWithError(impl=obj)
@@ -183,25 +178,36 @@ class VectorOfValues(BaseModel):
         elif self.N is None:
             obj = ImplValueWithoutError(value=self.SD)
         else:
-            obj = ImplValueWithError(value=self.SD, SE=self.SD / np.sqrt(self.N - 1))
+            obj = ImplNormalValueWithError(
+                value=self.SD, SE=self.SD / np.sqrt(self.N - 1)
+            )
         return ValueWithError(impl=obj)
 
     def get_ValueWithError(self, CI_levels: list[float] = None) -> ValueWithError:
         if CI_levels is None:
             CI_levels = []
-        obj = ImplValueWithErrorN(value=self.impl.value, SD=self.impl.SD, N=self.impl.N)
+        obj = ImplStudentValueWithError(
+            value=self.impl.value, SD=self.impl.SD, N=self.impl.N
+        )
         cis = {
             level: CI_any.CreateFromVector(self.impl.values, N=None, level=level)
             for level in CI_levels
         }
         return ValueWithError(impl=obj, cis=cis)
 
+    @property
+    def meanEstimate(self) -> ValueWithError:
+        obj = ImplStudentValueWithError(
+            value=self.impl.value, SD=self.impl.SD / np.sqrt(self.N), N=self.impl.N
+        )
+        return ValueWithError(impl=obj)
+
 
 def make_ValueWithError_from_generator(
     generator: Iterator[float] | np.ndarray,
     N: int | None = None,
     estimate_mean: bool = False,
-) -> ImplValueWithError:
+) -> ImplNormalValueWithError:
     """
     Creates a ValueWithError from a generator using the inline method.
     :param generator: A generator that returns a float on each iteration.
@@ -227,4 +233,4 @@ def make_ValueWithError_from_generator(
 
 
 def fromJSON(json: dict) -> ValueWithError:
-    return ImplValueWithError.model_validate(json)
+    return ImplNormalValueWithError.model_validate(json)

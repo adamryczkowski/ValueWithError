@@ -23,6 +23,8 @@ def test_basic():
 
     assert repr(b) == "123456 ± 11"
     assert repr(b.CI95) == "CI_95%: (123436, 123478)"
+    c = b.get_ValueWithError([0.95])
+    assert repr(c) == "123456 ± 11 CI_95%: (123436, 123478)"
 
 
 def test_vec():
@@ -30,9 +32,9 @@ def test_vec():
     vec = np.random.normal(123456, 10, 100)
     b = make_ValueWithError_from_vector(vec)
 
-    assert repr(b.estimateMean()) == "123456.3 ± 1.1"
+    assert repr(b.meanEstimate) == "123456.3 ± 1.1"
     assert repr(b.CI95) == "CI_95%: (123436, 123478)"
-    assert repr(b.get_CI(0.995)) == "CI_99.5%: (123428.0, 123431.7)"
+    assert repr(b.get_CI(0.995)) == "CI_99.5%: (123429, 123480)"
 
 
 def test_edge1():
