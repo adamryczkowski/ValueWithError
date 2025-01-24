@@ -95,34 +95,34 @@ class ValueWithError(BaseModel):
             # ans = ans.rstrip()
         return ans
 
-    def estimateMean(self) -> ValueWithError:
-        if self.SE is None or self.N is None:
-            obj = ImplValueWithoutError(value=self.value)
-        else:
-            obj = ImplNormalValueWithError(value=self.value, SE=self.SE)
-        return ValueWithError(impl=obj)
-
-    def estimateSE(self) -> Optional[ValueWithError]:
-        if self.SE is None:
-            return None
-        elif self.N is None:
-            obj = ImplValueWithoutError(value=self.SE)
-        else:
-            obj = ImplNormalValueWithError(
-                value=self.SE, SE=self.SE / np.sqrt(2 * (self.N - 1))
-            )
-        return ValueWithError(impl=obj)
-
-    def estimateSD(self) -> Optional[ValueWithError]:
-        if self.SD is None:
-            return None
-        elif self.N is None:
-            obj = ImplValueWithoutError(value=self.SD)
-        else:
-            obj = ImplNormalValueWithError(
-                value=self.SD, SE=self.SD / np.sqrt(self.N - 1)
-            )
-        return ValueWithError(impl=obj)
+    # def estimateMean(self) -> ValueWithError:
+    #     if self.SE is None or self.N is None:
+    #         obj = ImplValueWithoutError(value=self.value)
+    #     else:
+    #         obj = ImplNormalValueWithError(value=self.value, SE=self.SE)
+    #     return ValueWithError(impl=obj)
+    #
+    # def estimateSE(self) -> Optional[ValueWithError]:
+    #     if self.SE is None:
+    #         return None
+    #     elif self.N is None:
+    #         obj = ImplValueWithoutError(value=self.SE)
+    #     else:
+    #         obj = ImplNormalValueWithError(
+    #             value=self.SE, SE=self.SE / np.sqrt(2 * (self.N - 1))
+    #         )
+    #     return ValueWithError(impl=obj)
+    #
+    # def estimateSD(self) -> Optional[ValueWithError]:
+    #     if self.SD is None:
+    #         return None
+    #     elif self.N is None:
+    #         obj = ImplValueWithoutError(value=self.SD)
+    #     else:
+    #         obj = ImplNormalValueWithError(
+    #             value=self.SD, SE=self.SD / np.sqrt(self.N - 1)
+    #         )
+    #     return ValueWithError(impl=obj)
 
 
 class VectorOfValues(BaseModel):
@@ -133,12 +133,16 @@ class VectorOfValues(BaseModel):
         return self.impl.value
 
     @property
-    def SE(self) -> Optional[float]:
-        return self.impl.SE
-
-    @property
     def SD(self) -> Optional[float]:
         return self.impl.SD
+
+    @property
+    def SE(self) -> Optional[float]:
+        if self.impl.N == 0:
+            return None
+        if self.impl.N <= 1:
+            return 0.0
+        return self.impl.SD / np.sqrt(self.impl.N)
 
     @property
     def N(self) -> Optional[int | float]:
@@ -154,32 +158,35 @@ class VectorOfValues(BaseModel):
     def __repr__(self):
         return repr(self.impl)
 
-    def estimateMean(self) -> ValueWithError:
-        if self.SE is None or self.N is None:
+    @property
+    def meanEstimate(self) -> ValueWithError:
+        if self.SD is None or self.N is None:
             obj = ImplValueWithoutError(value=self.value)
         else:
-            obj = ImplNormalValueWithError(value=self.value, SE=self.SE)
+            obj = ImplStudentValueWithError(value=self.value, SD=self.SE, N=self.N)
         return ValueWithError(impl=obj)
 
-    def estimateSE(self) -> Optional[ValueWithError]:
+    @property
+    def SEEstimate(self) -> Optional[ValueWithError]:
         if self.SE is None:
             return None
         elif self.N is None:
             obj = ImplValueWithoutError(value=self.SE)
         else:
             obj = ImplNormalValueWithError(
-                value=self.SE, SE=self.SE / np.sqrt(2 * (self.N - 1))
+                value=self.SE, SD=float(self.SE / np.sqrt(2 * (self.N - 1)))
             )
         return ValueWithError(impl=obj)
 
-    def estimateSD(self) -> Optional[ValueWithError]:
-        if self.SD is None:
+    @property
+    def SDEstimate(self) -> Optional[ValueWithError]:
+        if self.SD is None or self.N is None:
             return None
         elif self.N is None:
             obj = ImplValueWithoutError(value=self.SD)
         else:
             obj = ImplNormalValueWithError(
-                value=self.SD, SE=self.SD / np.sqrt(self.N - 1)
+                value=self.SD, SD=self.SD / np.sqrt(self.N - 1)
             )
         return ValueWithError(impl=obj)
 
@@ -195,12 +202,12 @@ class VectorOfValues(BaseModel):
         }
         return ValueWithError(impl=obj, cis=cis)
 
-    @property
-    def meanEstimate(self) -> ValueWithError:
-        obj = ImplStudentValueWithError(
-            value=self.impl.value, SD=self.impl.SD / np.sqrt(self.N), N=self.impl.N
-        )
-        return ValueWithError(impl=obj)
+    # @property
+    # def meanEstimate(self) -> ValueWithError:
+    #     obj = ImplStudentValueWithError(
+    #         value=self.impl.value, SD=self.impl.SD / np.sqrt(self.N), N=self.impl.N
+    #     )
+    #     return ValueWithError(impl=obj)
 
 
 def make_ValueWithError_from_generator(
