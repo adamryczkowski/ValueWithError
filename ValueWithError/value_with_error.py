@@ -21,7 +21,7 @@ def make_ValueWithError(
     SD: float = None,
     N: int = None,
     CI: CI_any | CI_95 = None,
-):
+) -> ValueWithError:
     if SD is None:
         assert N is None
         obj = ImplValueWithoutError(value=mean)
@@ -47,9 +47,9 @@ class ValueWithError(BaseModel):
     """A class that represents a value with an error."""
 
     impl: Union[
-        ImplNormalValueWithError,
-        ImplValueVec,
         ImplStudentValueWithError,
+        ImplNormalValueWithError,
+        # ImplValueVec,
         ImplValueWithoutError,
     ]
     cis: dict[float, CI_any | CI_95] = {}
@@ -92,10 +92,13 @@ class ValueWithError(BaseModel):
         ans = repr(self.impl)
         if len(self.cis) > 0:
             # ans += " CIs: "
-            for level, ci in self.cis.items():
+            for ci in self.cis.values():
                 ans += " " + repr(ci)
             # ans = ans.rstrip()
         return ans
+
+    def __str__(self):
+        return self.__repr__()
 
     @property
     def meanEstimate(self) -> ValueWithError:
