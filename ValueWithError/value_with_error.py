@@ -40,7 +40,7 @@ def make_ValueWithError_from_vector(
     vector: np.ndarray, N: int = None
 ) -> VectorOfValues:
     obj = ImplValueVec(values=vector, N=N)
-    return VectorOfValues(impl=obj)
+    return VectorOfValues(impl2=obj)
 
 
 class ValueWithError(BaseModel):
@@ -134,37 +134,37 @@ class ValueWithError(BaseModel):
 
 
 class VectorOfValues(BaseModel):
-    impl: ImplValueVec
+    impl2: ImplValueVec
 
     @property
     def value(self) -> float:
-        return self.impl.value
+        return self.impl2.value
 
     @property
     def SD(self) -> Optional[float]:
-        return self.impl.SD
+        return self.impl2.SD
 
     @property
     def SE(self) -> Optional[float]:
-        if self.impl.N == 0:
+        if self.impl2.N == 0:
             return None
-        if self.impl.N <= 1:
+        if self.impl2.N <= 1:
             return 0.0
-        return self.impl.SD / np.sqrt(self.impl.N)
+        return self.impl2.SD / np.sqrt(self.impl2.N)
 
     @property
     def N(self) -> Optional[int | float]:
-        return self.impl.N
+        return self.impl2.N
 
     @property
     def CI95(self) -> CI95:
-        return self.impl.CI95
+        return self.impl2.CI95
 
     def get_CI(self, level: float) -> CI_any | CI_95:
-        return self.impl.get_CI(level)
+        return self.impl2.get_CI(level)
 
     def __repr__(self):
-        return repr(self.impl)
+        return repr(self.impl2)
 
     @property
     def meanEstimate(self) -> ValueWithError:
@@ -202,10 +202,10 @@ class VectorOfValues(BaseModel):
         if CI_levels is None:
             CI_levels = []
         obj = ImplStudentValueWithError(
-            value=self.impl.value, SD=self.impl.SD, N=self.impl.N
+            value=self.impl2.value, SD=self.impl2.SD, N=self.impl2.N
         )
         cis = {
-            level: CI_any.CreateFromVector(self.impl.values, N=None, level=level)
+            level: CI_any.CreateFromVector(self.impl2.values, N=None, level=level)
             for level in CI_levels
         }
         return ValueWithError(impl=obj, cis=cis)
