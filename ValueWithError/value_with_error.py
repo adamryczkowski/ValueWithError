@@ -19,7 +19,7 @@ from .value_with_error_impl import (
 def make_ValueWithError(
     mean: float,
     SD: float = None,
-    N: int = None,
+    N: int | float = None,
     CI: CI_any | CI_95 = None,
 ) -> ValueWithError:
     if SD is None:
