@@ -37,7 +37,7 @@ def make_ValueWithError(
 
 
 def make_ValueWithError_from_vector(
-    vector: np.ndarray, N: int = None
+    vector: np.ndarray, N: int | float = None
 ) -> VectorOfValues:
     obj = ImplValueVec(values=vector, N=N)
     return VectorOfValues(impl2=obj)
