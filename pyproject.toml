@@ -3,7 +3,6 @@ name = "ValueWithError"
 version = "2.4.7"
 description = "Simple implementation of the basic concept of Value with Error. No error propagation. Compatible with Pydantic."
 authors = ["Adam Ryczkowski <adam@statystyka.net>"]
-
 packages = [{ include = "ValueWithError"}]
 readme = "README.md"
 
