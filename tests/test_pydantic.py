@@ -32,15 +32,18 @@ def test2():
         impl: ImplVectErr
 
     class MainEf(BaseModel):
-        one_dim_pars: list[ValErr | VectorOfValues]
+        one_dim_pars: list[ValErr | VectErr]
 
     c = MainEf(one_dim_pars=[ValErr(impl2=ImplValErr(val=10))])
-    # c = MainEf(one_dim_pars=[make_ValueWithError(10,1,100)])
-
     json = c.model_dump_json()
+    c2 = MainEf.model_validate_json(json)
+    assert c2 == c
 
+    c = MainEf(one_dim_pars=[VectErr(impl=ImplVectErr(vals="a"))])
+    json = c.model_dump_json()
     c2 = MainEf.model_validate_json(json)
     print(c2)
+    assert c2 == c
 
 
 def test3():
@@ -58,5 +61,5 @@ def test3():
 
 if __name__ == "__main__":
     # test1()
-    # test2()
-    test3()
+    test2()
+    # test3()

@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "ValueWithError"
-version = "2.4.7"
+version = "2.5.0"
 description = "Simple implementation of the basic concept of Value with Error. No error propagation. Compatible with Pydantic."
 authors = ["Adam Ryczkowski <adam@statystyka.net>"]
 packages = [{ include = "ValueWithError"}]
@@ -13,6 +13,7 @@ overrides = "^7.4.0"
 scipy = "^1.11.4"
 pydantic = "^2.10.4"
 numpydantic = "^1.6.6"
+pytest = "^8.3.5"
 
 [poetry.group.dev.dependencies]
 pytest = "^8.3.4"

@@ -1,13 +1,12 @@
 from __future__ import annotations
 
-from typing import Iterator, Optional
+from typing import Iterator, Optional, Annotated
 
 import numpy as np
-from numpydantic import NDArray, Shape
-from pydantic import BaseModel, confloat, model_validator, conint
+from pydantic import BaseModel, model_validator, Field, ConfigDict
 from scipy.stats import t as t_dist, norm as norm_dist
-
-from .iface import IValueWithError, I_CI
+from .pydantic_numpy import NDArraySerializer
+from .iface import I_CI
 from .repr import value_with_error_repr, CI_repr
 
 
@@ -38,13 +37,10 @@ class ImplValueWithoutError(BaseModel):
     def get_CI(self, level: float) -> I_CI:
         return CI_any(lower=self.value, upper=self.value, level=level)
 
-    def stripCI(self) -> IValueWithError:
-        return self
-
 
 class ImplNormalValueWithError(BaseModel):
     value: float
-    SD: confloat(ge=0)
+    SD: Annotated[float, Field(ge=0)]
 
     def __repr__(self):
         return value_with_error_repr(self.value, self.SD)
@@ -55,12 +51,14 @@ class ImplNormalValueWithError(BaseModel):
             lower=self.value - 1.96 * self.SD, upper=self.value + 1.96 * self.SD
         )
 
-    def get_CI(self, level: float = 0.95) -> CI_any | None:
+    def get_CI(self, level: float = 0.95) -> I_CI | None:
         if level == 0.95:
             return self.CI95
         t = norm_dist.ppf(1 - (1 - level) / 2)
         return CI_any(
-            lower=self.value - t * self.SD, upper=self.value + t * self.SD, level=level
+            lower=float(self.value - t * self.SD),
+            upper=float(self.value + t * self.SD),
+            level=level,
         )
 
     # @property
@@ -71,14 +69,11 @@ class ImplNormalValueWithError(BaseModel):
     def N(self) -> Optional[int | float]:
         return None
 
-    def stripCI(self) -> IValueWithError:
-        return self
-
 
 class ImplStudentValueWithError(BaseModel):
     value: float
-    SD: confloat(ge=0)
-    N: conint(ge=1)
+    SD: Annotated[float, Field(ge=0)]
+    N: Annotated[float, Field(ge=1)]
 
     def __repr__(self):
         return value_with_error_repr(self.value, self.SD)
@@ -86,22 +81,17 @@ class ImplStudentValueWithError(BaseModel):
     @property
     def CI95(self) -> CI_95:
         return CI_95(
-            lower=self.value - t_dist.ppf(0.975, self.N - 1) * self.SD,
-            upper=self.value + t_dist.ppf(0.975, self.N - 1) * self.SD,
+            lower=float(self.value - t_dist.ppf(0.975, self.N - 1) * self.SD),
+            upper=float(self.value + t_dist.ppf(0.975, self.N - 1) * self.SD),
         )
 
     def get_CI(self, level: float) -> CI_any | None:
         t = t_dist.ppf(1 - (1 - level) / 2, self.N - 1)
         return CI_any(
-            lower=self.value - t * self.SD, upper=self.value + t * self.SD, level=level
+            lower=float(self.value - t * self.SD),
+            upper=float(self.value + t * self.SD),
+            level=level,
         )
-
-    # @property
-    # def SE(self) -> float:
-    #     return self.SD / np.sqrt(self.N)
-
-    def stripCI(self) -> IValueWithError:
-        return self
 
     def compressed_copy(self):
         return self
@@ -110,10 +100,11 @@ class ImplStudentValueWithError(BaseModel):
 class ImplValueVec(BaseModel):
     """Class that remembers all the individual values that makes the mean and SE."""
 
-    values: NDArray[Shape, float]
-    N: Optional[float | int]
+    values: NDArraySerializer
+    N: float | int
+    model_config = ConfigDict(arbitrary_types_allowed=True)
 
-    def __init__(self, values: np.ndarray, N: float | int = None):
+    def __init__(self, values: np.ndarray, N: float | int | None = None):
         if N is not None:
             super().__init__(values=values, N=N)
         else:
@@ -146,11 +137,8 @@ class ImplValueVec(BaseModel):
     def CI95(self) -> CI_95:
         return CI_95.CreateFromVector(self.values)
 
-    def get_CI(self, level: float) -> CI_any:
+    def get_CI(self, level: float) -> I_CI:
         return CI_any.CreateFromVector(self.values, level=level)
-
-    def stripCI(self) -> IValueWithError:
-        return self
 
     def compressed_copy(self):
         return ImplStudentValueWithError(value=self.value, SD=self.SD, N=self.N)
@@ -188,7 +176,7 @@ class CI_95(I_CI, BaseModel):
 class CI_any(I_CI, BaseModel):
     lower: float
     upper: float
-    level: confloat(gt=0, lt=1)
+    level: Annotated[float, Field(gt=0, lt=1)]
 
     def __init__(self, lower: float, upper: float, level: float = 0.95, **kwargs):
         super().__init__(lower=lower, upper=upper, level=level, **kwargs)

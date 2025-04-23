@@ -10,7 +10,7 @@ class I_CI(ABC):
     # @property
     # @abstractmethod
     # def level(self) -> float: ...
-
+    #
     # @property
     # @abstractmethod
     # def lower(self) -> float: ...
@@ -48,7 +48,7 @@ class IValueWithError(ABC):
     # impl: ImplValueWithError
 
     @abstractmethod
-    def __repr__(self): ...
+    def __repr__(self) -> str: ...
 
     @property
     @abstractmethod
@@ -68,7 +68,7 @@ class IValueWithError(ABC):
 
     @property
     @abstractmethod
-    def CI95(self) -> CI95: ...
+    def CI95(self) -> I_CI: ...
 
     @abstractmethod
     def get_CI(self, level: float) -> I_CI: ...
