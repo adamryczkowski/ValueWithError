@@ -6,7 +6,7 @@ import numpy as np
 def value_with_error_repr(
     mean: float,
     SE: float | None,
-    significant_digit_se: int = 2,
+    significant_digit_se: int = 4,
     suppress_se: bool = False,
 ) -> str:
     assert SE is None or SE >= 0
