@@ -6,7 +6,8 @@ import numpy as np
 def value_with_error_repr(
     mean: float,
     SE: float | None,
-    significant_digit_se: int = 4,
+    significant_digit_se: int = 2,
+    significant_digit_bare: int = 4,
     suppress_se: bool = False,
 ) -> str:
     assert SE is None or SE >= 0
@@ -23,7 +24,7 @@ def value_with_error_repr(
 
     if SE is None or np.isclose(SE, 0):
         SE = None
-        absolute_digit = floor(log(abs(mean), 10)) - significant_digit_se + 1
+        absolute_digit = floor(log(abs(mean), 10)) - significant_digit_bare + 1
     else:
         absolute_digit = floor(log(abs(SE), 10)) - significant_digit_se + 1
 

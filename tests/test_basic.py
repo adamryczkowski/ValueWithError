@@ -39,7 +39,7 @@ def test_vec():
 
 def test_edge1():
     a = make_ValueWithError(1.0, 0.0)
-    assert repr(a) == "1.0"
+    assert repr(a) == "1.000"
     assert repr(a.CI95) == "CI_95%: (1.0, 1.0)"
 
 

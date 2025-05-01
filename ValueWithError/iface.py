@@ -8,16 +8,11 @@ from .repr import value_with_error_repr, CI_repr
 
 class I_CI(ABC):
     @property
-    @abstractmethod
+    # @override
     def level(self) -> float: ...
 
-    @property
-    @abstractmethod
-    def lower(self) -> float: ...
-
-    @property
-    @abstractmethod
-    def upper(self) -> float: ...
+    lower: float
+    upper: float
 
     def __repr__(self) -> str:
         if 1 - self.level < 0.01:

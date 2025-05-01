@@ -4,7 +4,9 @@ from typing import Iterator, Optional, Annotated
 
 import numpy as np
 from pydantic import BaseModel, model_validator, Field, ConfigDict
-from pydantic.dataclasses import dataclass
+
+# from pydantic.dataclasses import dataclass
+from dataclasses import dataclass
 from scipy.stats import t as t_dist, norm as norm_dist
 from .pydantic_numpy import NDArraySerializer
 from .iface import I_CI
@@ -178,10 +180,14 @@ class CI_95(I_CI, BaseModel):
 class CI_any(I_CI, BaseModel):
     lower: float  # type: ignore
     upper: float  # type: ignore
-    level: Annotated[float, Field(gt=0, lt=1)]  # type: ignore
+    level_: Annotated[float, Field(gt=0, lt=1)]  # type: ignore
+
+    @property
+    def level(self) -> float:
+        return self.level_
 
     def __init__(self, lower: float, upper: float, level: float = 0.95, **kwargs):
-        super().__init__(lower=lower, upper=upper, level=level, **kwargs)
+        super().__init__(lower=lower, upper=upper, level_=level, **kwargs)
 
     def __repr__(self):
         if 1 - self.level < 0.01:
