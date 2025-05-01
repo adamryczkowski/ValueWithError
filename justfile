@@ -40,7 +40,7 @@ test:
   set -euo pipefail
   poetry run pytest
 
-run_all_pre_commit_hooks:
-  #!/usr/bin/env bash
-  set -euo pipefail
-  pre-commit run --all-files
+check-all:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    pre-commit run --all-files

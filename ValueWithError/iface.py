@@ -7,17 +7,17 @@ from .repr import value_with_error_repr, CI_repr
 
 
 class I_CI(ABC):
-    # @property
-    # @abstractmethod
-    # def level(self) -> float: ...
-    #
-    # @property
-    # @abstractmethod
-    # def lower(self) -> float: ...
-    #
-    # @property
-    # @abstractmethod
-    # def upper(self) -> float: ...
+    @property
+    @abstractmethod
+    def level(self) -> float: ...
+
+    @property
+    @abstractmethod
+    def lower(self) -> float: ...
+
+    @property
+    @abstractmethod
+    def upper(self) -> float: ...
 
     def __repr__(self) -> str:
         if 1 - self.level < 0.01:
