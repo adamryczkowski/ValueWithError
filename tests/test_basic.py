@@ -66,9 +66,22 @@ def test_error_with_ci():
     assert repr(a.CI95) == "CI_95%: (0.90, 1.10)"
 
 
+def test_sign():
+    a = make_ValueWithError(-13)
+    b = make_ValueWithError(-13, 1)
+    c = make_ValueWithError(-13, 1, 24)
+    assert repr(a) == "-13.00"
+    assert repr(-a) == "13.00"
+    assert repr(b) == "-13.0 ± 1.0"
+    assert repr(-b) == "13.0 ± 1.0"
+    assert repr(c) == "-13.0 ± 1.0"
+    assert repr(-c) == "13.0 ± 1.0"
+
+
 if __name__ == "__main__":
     test_basic()
     test_vec()
     test_edge1()
     test_edge2()
     test_error_with_ci()
+    test_sign()

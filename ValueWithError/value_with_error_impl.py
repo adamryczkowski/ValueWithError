@@ -40,6 +40,9 @@ class ImplValueWithoutError(BaseModel):
     def get_CI(self, level: float) -> I_CI:
         return CI_any(lower=self.value, upper=self.value, level=level)
 
+    def __neg__(self) -> ImplValueWithoutError:
+        return ImplValueWithoutError(value=-self.value)
+
 
 class ImplNormalValueWithError(BaseModel):
     value: float
@@ -72,6 +75,9 @@ class ImplNormalValueWithError(BaseModel):
     def N(self) -> Optional[int | float]:
         return None
 
+    def __neg__(self) -> ImplNormalValueWithError:
+        return ImplNormalValueWithError(value=-self.value, SD=self.SD)
+
 
 class ImplStudentValueWithError(BaseModel):
     value: float
@@ -98,6 +104,9 @@ class ImplStudentValueWithError(BaseModel):
 
     def compressed_copy(self):
         return self
+
+    def __neg__(self) -> ImplStudentValueWithError:
+        return ImplStudentValueWithError(value=-self.value, SD=self.SD, N=self.N)
 
 
 class ImplValueVec(BaseModel):
@@ -170,11 +179,14 @@ class CI_95(I_CI, BaseModel):
     ) -> CI_95:
         v = [x for i, x in enumerate(generator) if N is None or i < N]
         perc = np.percentile(v, [2.5, 97.5])
-        return CI_95(lower=perc[0], upper=perc[1])
+        return CI_95(lower=float(perc[0]), upper=float(perc[1]))
 
     @property
     def level(self) -> float:
         return 0.95
+
+    def __neg__(self) -> CI_95:
+        return CI_95(lower=-self.upper, upper=-self.lower)
 
 
 class CI_any(I_CI, BaseModel):
@@ -210,11 +222,14 @@ class CI_any(I_CI, BaseModel):
 
         perc = np.percentile(v, [(1 - level) * 50, 100 - (1 - level) * 50])
         if level == 0.95:
-            return CI_95(lower=perc[0], upper=perc[1], level=0.95)
+            return CI_95(lower=float(perc[0]), upper=float(perc[1]), level=0.95)
         else:
             return CI_any(
                 lower=float(perc[0]), upper=float(perc[1]), level=float(level)
             )
+
+    def __neg__(self) -> CI_any:
+        return CI_any(lower=-self.upper, upper=-self.lower, level=self.level)
 
 
 #

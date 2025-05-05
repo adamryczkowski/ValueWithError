@@ -132,6 +132,10 @@ class ValueWithError(BaseModel):
             )
         return ValueWithError(impl=obj)
 
+    def __neg__(self) -> ValueWithError:
+        new_cis = {key: -cis for key, cis in self.cis.items()}
+        return ValueWithError(impl=-self.impl, cis=new_cis)
+
 
 class VectorOfValues(BaseModel):
     impl2: ImplValueVec
