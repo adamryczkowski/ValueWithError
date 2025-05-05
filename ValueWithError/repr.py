@@ -24,7 +24,10 @@ def value_with_error_repr(
 
     if SE is None or np.isclose(SE, 0):
         SE = None
-        absolute_digit = floor(log(abs(mean), 10)) - significant_digit_bare + 1
+        if not np.isclose(mean, 0):
+            absolute_digit = floor(log(abs(mean), 10)) - significant_digit_bare + 1
+        else:
+            absolute_digit = -significant_digit_bare + 1
     else:
         absolute_digit = floor(log(abs(SE), 10)) - significant_digit_se + 1
 
