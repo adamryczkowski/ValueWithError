@@ -46,6 +46,8 @@ def value_with_error_repr(
         else:
             return f"{round_value_txt}"
     else:
+        if "." in round_value_txt:
+            round_value_txt = round_value_txt.rstrip("0").rstrip(".")
         return f"{round_value_txt}"
 
 

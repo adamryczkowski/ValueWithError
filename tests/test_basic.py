@@ -39,7 +39,7 @@ def test_vec():
 
 def test_edge1():
     a = make_ValueWithError(1.0, 0.0)
-    assert repr(a) == "1.000"
+    assert repr(a) == "1"
     assert repr(a.CI95) == "CI_95%: (1.0, 1.0)"
 
 
@@ -70,8 +70,8 @@ def test_sign():
     a = make_ValueWithError(-13)
     b = make_ValueWithError(-13, 1)
     c = make_ValueWithError(-13, 1, 24)
-    assert repr(a) == "-13.00"
-    assert repr(-a) == "13.00"
+    assert repr(a) == "-13"
+    assert repr(-a) == "13"
     assert repr(b) == "-13.0 ± 1.0"
     assert repr(-b) == "13.0 ± 1.0"
     assert repr(c) == "-13.0 ± 1.0"
