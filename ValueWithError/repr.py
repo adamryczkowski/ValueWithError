@@ -111,35 +111,21 @@ def CI_repr(lower: float, upper: float, significant_digit: int = 2) -> str:
 
 
 def show_value_err_manual(
-    x: float | list[float] | np.ndarray,
+    x: list[float] | np.ndarray,
     digits: int,
-    dx: None | float | list[float] | np.ndarray = None,
-) -> str | list[str]:
-    if isinstance(x, (list, np.ndarray)):
-        if dx is not None:
-            if isinstance(dx, float):
-                dx = np.repeat(dx, len(x))
-            assert isinstance(dx, (list, np.ndarray))
-            assert len(x) == len(dx)
-        if dx is None:
-            return [f"{round_with_padding(one_x, digits)}" for one_x in x]
-        else:
-            return [
-                f"{round_with_padding(one_x, digits)} ± {round_with_padding(one_dx, digits)}"
-                for one_x, one_dx in zip(x, dx)
-            ]
+    dx: None | list[float] | np.ndarray = None,
+) -> list[str]:
+    assert isinstance(x, (list, np.ndarray))
+    if dx is not None:
+        assert isinstance(dx, (list, np.ndarray))
+        assert len(x) == len(dx)
+    if dx is None:
+        return [f"{round_with_padding(one_x, digits)}" for one_x in x]
     else:
-        assert isinstance(x, (float, int))
-        if dx is None:
-            # noinspection PyTypeChecker
-            return f"{round_with_padding(x, digits)}"
-        else:
-            if isinstance(dx, (list, np.ndarray)):
-                assert len(dx) == 1
-                dx = dx[0]
-            assert isinstance(dx, float)
-            # noinspection PyTypeChecker
-            return f"{round_with_padding(x, digits)} ± {round_with_padding(dx, digits)}"
+        return [
+            f"{round_with_padding(one_x, digits)} ± {round_with_padding(one_dx, digits)}"
+            for one_x, one_dx in zip(x, dx)
+        ]
 
 
 def show_value_err_digits(
@@ -166,45 +152,26 @@ def show_value_err_digits(
 
 
 def show_value_err(
-    x: float | list[float] | np.ndarray,
-    dx: None | float | list[float] | np.ndarray = None,
+    x: list[float] | np.ndarray,
+    dx: None | list[float] | np.ndarray = None,
     significant_digits_count: int = 2,
     show_err: bool = True,
-) -> str:
-    if isinstance(x, (list, np.ndarray)):
-        if dx is not None:
-            if isinstance(dx, float):
-                dx = np.repeat(dx, len(x))
-            assert isinstance(dx, (list, np.ndarray))
-            assert len(x) == len(dx)
-            mean_digits = show_value_err_digits(
-                dx, significant_digits_count=significant_digits_count
-            )
-        else:
-            mean_digits = show_value_err_digits(
-                x, significant_digits_count=significant_digits_count
-            )
+) -> list[str]:
+    assert isinstance(x, (list, np.ndarray))
+    if dx is not None:
+        if isinstance(dx, float):
+            dx = np.repeat(dx, len(x))
+        assert isinstance(dx, (list, np.ndarray))
+        assert len(x) == len(dx)
+        mean_digits = show_value_err_digits(
+            dx, significant_digits_count=significant_digits_count
+        )
     else:
-        assert isinstance(x, float)
-        if dx is not None:
-            if isinstance(dx, (list, np.ndarray)):
-                assert len(dx) == 1
-                dx = dx[0]
-            assert isinstance(dx, float)
-        if dx is None or np.isclose(dx, 0):
-            if x != 0:
-                mean_digits = show_value_err_digits(
-                    x, significant_digits_count=significant_digits_count
-                )
-            else:
-                mean_digits = significant_digits_count
-        else:
-            mean_digits = show_value_err_digits(
-                dx, significant_digits_count=significant_digits_count
-            )
+        mean_digits = show_value_err_digits(
+            x, significant_digits_count=significant_digits_count
+        )
     if show_err:
         ans = show_value_err_manual(x, digits=mean_digits, dx=dx)
     else:
         ans = show_value_err_manual(x, digits=mean_digits)
-    assert isinstance(ans, str)
     return ans
