@@ -1,34 +1,28 @@
-from .iface import IValueWithError
-from .repr import (
-    value_with_error_repr,
-    CI_repr,
-    show_value_err_manual,
-    show_value_err,
-    show_value_err_digits,
-    round_with_padding,
+from .repr_config import ValueWithErrorRepresentationConfig, absolute_rounding_digit
+from .constructors import make_ValueWithError, make_ValueWithError_from_vector
+from .iface import (
+    IValueWithError_Sample,
+    IValueWithError_SE,
+    IValueWithError_Minimal,
+    IValueWithError_Estimate,
+    IValueWithError_LinearTransforms,
+    I_CI,
 )
-from .value_with_error_impl import CI_any, CI_95
-from .value_with_error import (
-    make_ValueWithError_from_generator,
-    make_ValueWithError,
-    make_ValueWithError_from_vector,
-    ValueWithError,
-    VectorOfValues,
-)
+from .ValueWithError import ValueWithError
+from .CI import CI_95, CI_any
 
 __all__ = [
-    "IValueWithError",
-    "value_with_error_repr",
-    "CI_repr",
-    "CI_any",
-    "CI_95",
-    "make_ValueWithError_from_generator",
     "make_ValueWithError",
     "make_ValueWithError_from_vector",
+    "IValueWithError_Sample",
+    "IValueWithError_SE",
+    "IValueWithError_Minimal",
+    "IValueWithError_Estimate",
+    "IValueWithError_LinearTransforms",
+    "I_CI",
+    "ValueWithErrorRepresentationConfig",
+    "absolute_rounding_digit",
+    "CI_95",
+    "CI_any",
     "ValueWithError",
-    "VectorOfValues",
-    "show_value_err_manual",
-    "show_value_err",
-    "show_value_err_digits",
-    "round_with_padding",
 ]
