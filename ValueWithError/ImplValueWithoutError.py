@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from overrides import overrides
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, ConfigDict
 
 from .iface import (
     IValueWithError_Minimal,
@@ -21,9 +21,10 @@ class ImplValueWithoutError(
     """Value without error, that still implements the IValueWithError interface."""
 
     value_: float = Field(alias="value")
+    model_config = ConfigDict(serialize_by_alias=True)
 
     # def __init__(self, value: float, **kwargs):
-    #     super().__init__(value=value)
+    #     super().__init__(value=value, **kwargs)
 
     @property
     @overrides

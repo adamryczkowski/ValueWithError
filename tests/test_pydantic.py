@@ -1,22 +1,34 @@
-# from ValueWithError import ValueWithError, make_ValueWithError
-# from pydantic import BaseModel
-#
-#
-# def test1():
-#     class A(BaseModel):
-#         val: int | str
-#         dval: dict[str, int | str]
-#         verr: ValueWithError
-#
-#     a = A(val=1, dval={"a": "a", "b": 2}, verr=make_ValueWithError(10, 1, 100))
-#     a = make_ValueWithError(10, 1, 100)
-#     json = a.model_dump_json()
-#
-#     print(f"Serialized object {repr(a)}: {json}")
-#
-#     a2 = ValueWithError.model_validate_json(json)
-#
-#     assert repr(a)  == repr(a2)
+from ValueWithError import ValueWithError, make_ValueWithError
+from pydantic import BaseModel
+from ValueWithError.ImplValueWithoutError import ImplValueWithoutError
+
+
+def test_basie():
+    obj = ImplValueWithoutError(value=10)
+    json = obj.model_dump_json(by_alias=True)
+    print(f"Serialized object {repr(obj)}: {json}")
+    obj2 = ImplValueWithoutError.model_validate_json(json)
+    assert repr(obj) == repr(obj2)
+
+
+def test1():
+    class A(BaseModel):
+        val: int | str
+        dval: dict[str, int | str]
+        verr: ValueWithError
+
+    a = A(val=1, dval={"a": "a", "b": 2}, verr=make_ValueWithError(10, 1, 100))
+    a = make_ValueWithError(10, 1, 100)
+    json = a.model_dump_json(by_alias=True)
+
+    print(f"Serialized object {repr(a)}: {json}")
+
+    a2 = ValueWithError.model_validate_json(json)
+
+    print(f"Testing if {repr(a)} == {repr(a2)}")
+    assert repr(a) == repr(a2)
+
+
 #
 #
 #
@@ -61,7 +73,8 @@
 # #     print(result2)
 #
 #
-# if __name__ == "__main__":
-#     test1()
-#     # test2()
-#     # test3()
+if __name__ == "__main__":
+    test_basie()
+    test1()
+    # test2()
+    # test3()

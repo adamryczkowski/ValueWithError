@@ -21,8 +21,8 @@ class ImplSampleValueWithError(IValueWithError_Sample, BaseModel):
     sample_: NDArraySerializer = Field(alias="sample")
     model_config = ConfigDict(arbitrary_types_allowed=True)
 
-    # def __init__(self, sample: np.ndarray):
-    #     super().__init__(sample_=sample)
+    # def __init__(self, sample: np.ndarray, **kwargs):
+    #     super().__init__(sample_=sample, **kwargs)
 
     @property
     @overrides

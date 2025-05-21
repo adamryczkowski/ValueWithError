@@ -3,7 +3,7 @@ from __future__ import annotations
 
 import numpy as np
 from overrides import overrides
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, ConfigDict
 from scipy.stats import norm as norm_dist
 
 from .CI import CI_95, CI_any
@@ -26,9 +26,10 @@ class ImplNormalValueWithError(
 ):
     value_: float = Field(alias="value")
     SE_: float = Field(ge=0, alias="SE")
+    model_config = ConfigDict(serialize_by_alias=True)
 
-    # def __init__(self, value: float, SE: float):
-    #     super().__init__(value_=value, SE_=SE)
+    # def __init__(self, value: float, SE: float, **kwargs):
+    #     super().__init__(value_=value, SE_=SE, **kwargs)
 
     @property
     @overrides
