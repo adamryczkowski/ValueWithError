@@ -26,15 +26,6 @@ class ValueWithError(BaseModel):
         ImplSampleValueWithError,
     ]
 
-    # def __init__(
-    #     self,
-    #     obj: ImplValueWithoutError
-    #     | ImplNormalValueWithError
-    #     | ImplStudentValueWithError
-    #     | ImplSampleValueWithError,
-    # ):
-    #     super().__init__(obj=obj)
-
     def suggested_precision_digit_pos(
         self, config: ValueWithErrorRepresentationConfig
     ) -> int:

@@ -1,3 +1,14 @@
+from ValueWithError import make_ValueWithError
+
+
+def test():
+    a = make_ValueWithError(1.0, 0.1)
+    print(f"ValueWithError: {repr(a)}")
+
+
+if __name__ == "__main__":
+    test()
+
 # import numpy as np
 #
 # from ValueWithError import make_ValueWithError_from_vector, CI_95, make_ValueWithError
