@@ -84,4 +84,7 @@ class ImplSampleValueWithError(IValueWithError_Sample, BaseModel):
 
     @overrides
     def student_estimate(self) -> IValueWithError_Estimate:
-        return ImplStudentValueWithError(value=self.value, SE=self.SE, N=self.N)
+        try:
+            return ImplStudentValueWithError(value=self.value, SE=self.SE, N=self.N)
+        except Exception as e:
+            raise ValueError(f"Failed to create student estimate: {e}")

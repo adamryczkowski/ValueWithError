@@ -123,4 +123,4 @@ class ImplNormalValueWithError(
                 ),
             )
         else:
-            raise TypeError(f"Unsupported type for addition: {type(other)}")
+            raise TypeError(f"Unsupported type for multiplication: {type(other)}")

@@ -1,153 +1,143 @@
 ## ValueWithError Python library
 
-This library provides a class for storing values with errors and nicely printing them. It also facilitates working with CI (confidence/credible intervals).
+This library provides a class for storing values with errors and nicely printing them. It also facilitates working with confidence intervals (CI).
 
 ### Usage
 
 ```python
-from ValueWithError import ImplValueWithError, ValueWithErrorVec
+from ValueWithError import value_with_error, from_samples
 
-a = ImplValueWithError(1.0, 0.1)
+# Create a value with standard error
+a = value_with_error(value=1.0, error=0.1)
 print(a)
 # Prints: 1.00 ± 0.10
-print(a.get_CI95())  # 95% confidence interval calculated assuming normal distribution.
+print(a.CI95)
 # Prints: CI_95%: (0.80, 1.20)
 
-a = ImplValueWithError(1.0, 0.1,
-                       N=5)  # N is the number of samples used to calculate the value. It is used by the CI calculation.
-print(a.get_CI95())
-# Prints: CI_95%: (0.72, 1.28) - a bigger interval because of the smaller N
+# Create with number of samples for student-t distribution
+a = value_with_error(value=1.0, error=0.1, n_samples=5)
+print(a.CI95)
+# Prints: CI_95%: (0.72, 1.28) - a bigger interval because of the smaller sample size
 
+# Create from array of observations/samples
 import numpy as np
 
-vec = np.random.normal(123456, 10, 100)
-b = ValueWithErrorVec(vec)
+measurements = np.random.normal(123456, 10, 100)
+b = from_samples(measurements)
 
 print(b)
 # Prints: 123456 ± 11
-print(b.get_CI95())
+print(b.CI95)
 # Prints: CI_95%: (123436, 123476)
 ```
 
-`ValueWithErrorVec` is a class that calculates the value with error of a vector of values and stores that vector for potential later use.
+### Working with Confidence Intervals
 
-Confidence intervals for the ValueWithErrorVec are calculated using percentiles, not the normal distribution.
-
-Standard error is defined as standard deviation of the vector.
-
-To get the standard error of the mean, use the `.estimateMean()` method to get `ValueWithError` that represents estimate of Mean.
-This estimator is assumed to be normal/student.
-Similarly `.estimateSE()` returns the standard error of the mean estimator, which is, for simplicity, also assumed normal/student.
-
-
-
+The library provides easy access to confidence intervals:
 
 ```python
+from ValueWithError import from_samples
 import numpy as np
-from ValueWithError import ValueWithErrorVec
 
-vec = np.random.normal(123456, 10, 100)
-b = ValueWithErrorVec(vec)
+# Create a value from sample measurements
+measurements = np.random.normal(100, 5, 30)
+result = from_samples(measurements)
 
-print(b.estimateMean())
-# Prints: 123456.0 ± 1.1
-print(b.estimateSE())
-# Prints: 11.39 ± 0.81
-print(b.estimateMean().get_CI95())
-# Prints: CI_95%: (123453.8, 123458.2)
-print(b.estimateMean().get_CI(0.995))
-# Prints: CI_99.5%: (123452.8, 123459.2)
+# Get the 95% confidence interval (default)
+ci_95 = result.CI95
+print(ci_95)
+# Prints: CI_95%: (98.2, 101.8)
 
+# Get a custom confidence interval
+ci_99 = result.get_CI(0.99)
+print(ci_99)
+# Prints: CI_99%: (97.1, 102.9)
 ```
 
-If one needs small memory footprint, there's an online version of the calculation that doesn't ever store the vector. At the moment this method is not faster than the vector version, but it's more memory efficient.
+### Memory-Efficient Processing
+
+For large datasets, you can use the streaming interface:
 
 ```python
+from ValueWithError import from_stream
 import numpy as np
-from timeit import timeit
-from ValueWithError import ValueWithErrorVec, make_ValueWithError_from_generator
 
 def random_generator(mean, std, size):
     for i in range(size):
         yield np.random.normal(mean, std)
 
-method1 = lambda : ValueWithErrorVec([v for v in random_generator(123456, 10, 10000)], estimate_mean=True)
-method2 = lambda : make_ValueWithError_from_generator(random_generator(123456, 10, 10000), estimate_mean=True)
-
-print(timeit(method1, number=10))
-# Prints: 0.17308157600928098
-print(timeit(method2, number=10))
-# Prints: 0.16921406201436184
+# Process values without storing them all in memory
+result = from_stream(random_generator(123456, 10, 10000))
+print(result)
+# Prints: 123456.0 ± 1.1
 ```
 
-### Edge cases
+### From Samples to Student Estimate
 
-ValueWithError class is designed to handle edge cases gracefully. For example, if the error is zero, the value is printed without the error:
-
-```python
-from ValueWithError import ImplValueWithError
-
-a = ImplValueWithError(1.0, 0.0)
-print(a)
-# Prints: 1.00
-print(a.get_CI95())
-# Prints: CI_95%: (1.0, 1.0)
-```
-
-It also handles NaN and Inf values:
+When working with sample data, you can get a student estimate for more accurate confidence intervals:
 
 ```python
-from ValueWithError import ImplValueWithError
+from ValueWithError import from_samples
 import numpy as np
 
-a = ImplValueWithError(np.nan, 0.1)
+# Generate some sample data
+measurements = np.random.normal(100, 5, 20)
+
+# Create a ValueWithError from samples
+sample_result = from_samples(measurements)
+print(sample_result)
+# Prints: 100.2 ± 5.1
+
+# Get student estimate for the mean
+mean_estimate = sample_result.student_estimate()
+print(mean_estimate)
+# Prints: 100.2 ± 1.1
+
+# Compare confidence intervals
+print(sample_result.CI95)  # Based on sample distribution
+# Prints: CI_95%: (90.2, 110.2)
+
+print(mean_estimate.CI95)  # Based on student-t distribution
+# Prints: CI_95%: (97.9, 102.5)
+```
+
+### Edge Cases
+
+ValueWithError handles edge cases gracefully:
+
+```python
+from ValueWithError import value_with_error
+import numpy as np
+
+# Value without error
+a = value_with_error(1.0)
+print(a)
+# Prints: 1.00
+
+# NaN and Inf values
+a = value_with_error(np.nan, 0.1)
 print(a)
 # Prints: NaN
-print(a.get_CI95())
-# Prints: CI_95%: (NaN, NaN)
-b = ImplValueWithError(np.inf, 0.1)
+
+b = value_with_error(np.inf, 0.1)
 print(b)
 # Prints: ∞
-print(b.get_CI95())
-# Prints: CI_95%: (∞, ∞)
 ```
 
-If one does not want to print the error, it can be suppressed:
+### Customizing Output
+
+You can customize how values are displayed:
 
 ```python
-from ValueWithError import ImplValueWithError
+from ValueWithError import value_with_error, ValueWithErrorRepresentationConfig
 
-a = ImplValueWithError(1.0, None)
-print(a)
-# Prints: 1.0
-a.get_CI95() is None
-# Prints: True
-```
+# Create a custom configuration
+config = ValueWithErrorRepresentationConfig(
+    significant_digit_se=3,  # Show 3 significant digits for SE
+    pad_raw_value_with_zeros=True,  # Pad with zeros
+)
 
-By default, all the values are rounded to two significant digits. This default cannot be changed for the ValueWithError class, but it can be customized by calling the `value_with_error_repr` function directly:
-
-```python
-from ValueWithError import value_with_error_repr, CI_repr
-
-print(value_with_error_repr(1.0, 0.1, significant_digit_se=3))
+a = value_with_error(1.0, 0.1)
+print(a.pretty_repr(config))
 # Prints: 1.000 ± 0.100
-print(CI_repr(0.123456789, 0.1987654321, significant_digit=3))
-# Prints: (0.1235, 0.1988)
-```
-
-#### ValueWithErrorCI
-
-Internally ValueWithError stores the value, the error and optionally N - the number of samples used to calculate this statistic. ValueWithErrorCI additionally stores a single confidence interval. It is useful when one wants to store not only a value ± error, but also a single CI inteerval, e.g. when the distribution is not really normal.
-
-If one does not care about the memory footprint, the ValueWithErrorVec should be used instead, as it stores the whole vector and can calculate any statistic on demand, including percentile CI.
-
-```python
-from ValueWithError import ValueWithErrorCI
-a = ValueWithErrorCI(1.0, 0.1, 0.9, 1.1)
-print(a)
-# Prints: "1.00 ± 0.10 CI_95%: (0.90, 1.10)"
-
-b = ValueWithErrorCI(1.0, 0.1, 0.9, 1.1, ci_level=0.99)
-print(b)
-# Prints: "1.00 ± 0.10 CI_99%: (0.90, 1.10)"
 ```

@@ -134,4 +134,4 @@ class ImplStudentValueWithError(
                 value=self.value_ * other.value_, SE=self.SE_, N=self.N_
             )
         else:
-            raise TypeError(f"Unsupported type for addition: {type(other)}")
+            raise TypeError(f"Unsupported type for multiplication: {type(other)}")
