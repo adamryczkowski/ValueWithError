@@ -5,14 +5,15 @@ from overrides import overrides
 from pydantic import BaseModel, ConfigDict, Field
 
 from .CI import CI_95, CI_any
+from .ImplNormalValueWithError import ImplNormalValueWithError
 from .ImplStudentValueWithError import ImplStudentValueWithError
 from .iface import IValueWithError_Sample, I_CI, IValueWithError_Estimate
+from .pydantic_numpy import NDArraySerializer
 from .repr_config import (
-    ValueWithErrorRepresentationConfig,
+    ValueWithErrorRepresentationConfig as Config,
     suggested_precision_digit_pos_for_SE,
     repr_value_with_error,
 )
-from .pydantic_numpy import NDArraySerializer
 
 
 class ImplSampleValueWithError(IValueWithError_Sample, BaseModel):
@@ -54,9 +55,7 @@ class ImplSampleValueWithError(IValueWithError_Sample, BaseModel):
         return float(self.SD / np.sqrt(self.N))
 
     @overrides
-    def suggested_precision_digit_pos(
-        self, config: ValueWithErrorRepresentationConfig
-    ) -> int:
+    def suggested_precision_digit_pos(self, config: Config) -> int:
         return suggested_precision_digit_pos_for_SE(
             self.value, self.SD if config.prefer_sd else self.SE, config
         )
@@ -64,11 +63,15 @@ class ImplSampleValueWithError(IValueWithError_Sample, BaseModel):
     @overrides
     def pretty_repr(
         self,
-        config: ValueWithErrorRepresentationConfig,
+        config: Config,
         absolute_precision_digit: int | None = None,
     ) -> str:
         if absolute_precision_digit is None:
             absolute_precision_digit = self.suggested_precision_digit_pos(config)
+        if config.prefer_sd:
+            return repr_value_with_error(
+                self.value, self.SD, absolute_precision_digit, config
+            )
         return repr_value_with_error(
             self.value, self.SE, absolute_precision_digit, config
         )
@@ -88,3 +91,15 @@ class ImplSampleValueWithError(IValueWithError_Sample, BaseModel):
             return ImplStudentValueWithError(value=self.value, SE=self.SE, N=self.N)
         except Exception as e:
             raise ValueError(f"Failed to create student estimate: {e}")
+
+    @property
+    def SDEstimate(self) -> ImplNormalValueWithError:
+        return ImplNormalValueWithError(value=self.SD, SE=self.SD / np.sqrt(self.N - 1))
+
+    @property
+    def SEEstimate(self) -> ImplNormalValueWithError:
+        return ImplNormalValueWithError(value=self.SE, SE=self.SE / np.sqrt(self.N - 1))
+
+    def __str__(self) -> str:
+        config = Config()
+        return self.pretty_repr(config, self.suggested_precision_digit_pos(config))

@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-
 import numpy as np
 from overrides import overrides
 from pydantic import BaseModel, Field, ConfigDict
@@ -15,9 +14,9 @@ from .iface import (
     IValueWithError_Minimal,
 )
 from .repr_config import (
-    ValueWithErrorRepresentationConfig,
-    suggested_precision_digit_pos_for_SE,
+    ValueWithErrorRepresentationConfig as Config,
     repr_value_with_error,
+    suggested_precision_digit_pos_for_SE,
 )
 
 
@@ -42,9 +41,7 @@ class ImplNormalValueWithError(
         return self.value_
 
     @overrides
-    def suggested_precision_digit_pos(
-        self, config: ValueWithErrorRepresentationConfig
-    ) -> int:
+    def suggested_precision_digit_pos(self, config: Config) -> int:
         return suggested_precision_digit_pos_for_SE(self.value_, self.SE_, config)
 
     @overrides
@@ -73,7 +70,7 @@ class ImplNormalValueWithError(
     @overrides
     def pretty_repr(
         self,
-        config: ValueWithErrorRepresentationConfig,
+        config: Config,
         absolute_precision_digit: int | None = None,
     ) -> str:
         if absolute_precision_digit is None:
@@ -124,3 +121,7 @@ class ImplNormalValueWithError(
             )
         else:
             raise TypeError(f"Unsupported type for multiplication: {type(other)}")
+
+    def __str__(self) -> str:
+        config = Config()
+        return self.pretty_repr(config, self.suggested_precision_digit_pos(config))

@@ -9,7 +9,7 @@ from .iface import (
     IValueWithError_SE,
 )
 from .repr_config import (
-    ValueWithErrorRepresentationConfig,
+    ValueWithErrorRepresentationConfig as Config,
     round_to_string,
     suggested_precision_digit_pos,
 )
@@ -34,7 +34,7 @@ class ImplValueWithoutError(
     @overrides
     def pretty_repr(
         self,
-        config: ValueWithErrorRepresentationConfig,
+        config: Config,
         absolute_precision_digit: int | None = None,
     ) -> str:
         if absolute_precision_digit is None:
@@ -44,9 +44,7 @@ class ImplValueWithoutError(
         )
 
     @overrides
-    def suggested_precision_digit_pos(
-        self, config: ValueWithErrorRepresentationConfig
-    ) -> int:
+    def suggested_precision_digit_pos(self, config: Config) -> int:
         return suggested_precision_digit_pos(self.value_, config, False)
 
     @overrides
@@ -80,3 +78,7 @@ class ImplValueWithoutError(
             return other + self
         else:
             raise TypeError(f"Unsupported type for addition: {type(other)}")
+
+    def __str__(self) -> str:
+        config = Config()
+        return self.pretty_repr(config, self.suggested_precision_digit_pos(config))

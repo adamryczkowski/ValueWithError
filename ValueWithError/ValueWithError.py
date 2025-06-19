@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Union
+from typing import Union, Optional
 
 import numpy as np
 from pydantic import BaseModel
@@ -44,8 +44,8 @@ class ValueWithError(BaseModel):
             config, absolute_precision_digit=absolute_precision_digit
         )
 
-    def __repr__(self) -> str:
-        return self.obj.__repr__()
+    def __str__(self) -> str:
+        return self.obj.__str__()
 
     @property
     def SE(self) -> float | None:
@@ -95,3 +95,26 @@ class ValueWithError(BaseModel):
         if isinstance(self.obj, IValueWithError_Estimate):
             return self
         return None
+
+    @property
+    def SDEstimate(self) -> Optional[ValueWithError]:
+        if isinstance(self.obj, (ImplValueWithoutError, ImplNormalValueWithError)):
+            return None
+        assert isinstance(
+            self.obj, (ImplStudentValueWithError, ImplSampleValueWithError)
+        )
+        obj = self.obj.SDEstimate
+        return ValueWithError(obj=obj)
+
+    @property
+    def SEEstimate(self) -> Optional[ValueWithError]:
+        if isinstance(self.obj, ImplValueWithoutError):
+            return None
+        if isinstance(self.obj, ImplNormalValueWithError):
+            obj = ImplValueWithoutError(value=self.obj.SE)
+        else:
+            assert isinstance(
+                self.obj, (ImplStudentValueWithError, ImplSampleValueWithError)
+            )
+            obj = self.obj.SEEstimate
+        return ValueWithError(obj=obj)

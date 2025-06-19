@@ -4,15 +4,16 @@ from pydantic import BaseModel, Field, ConfigDict
 from scipy.stats import norm as norm_dist
 
 from .CI import CI_95, CI_any
+from .ImplNormalValueWithError import ImplNormalValueWithError
+from .ImplValueWithoutError import ImplValueWithoutError
 from .iface import (
     IValueWithError_Estimate,
     I_CI,
     IValueWithError_LinearTransforms,
     IValueWithError_Minimal,
 )
-from .ImplValueWithoutError import ImplValueWithoutError
 from .repr_config import (
-    ValueWithErrorRepresentationConfig,
+    ValueWithErrorRepresentationConfig as Config,
     suggested_precision_digit_pos_for_SE,
     repr_value_with_error,
 )
@@ -50,9 +51,7 @@ class ImplStudentValueWithError(
         return self.value_
 
     @overrides
-    def suggested_precision_digit_pos(
-        self, config: ValueWithErrorRepresentationConfig
-    ) -> int:
+    def suggested_precision_digit_pos(self, config: Config) -> int:
         return suggested_precision_digit_pos_for_SE(
             self.value_, self.SD if config.prefer_sd else self.SE_, config
         )
@@ -73,11 +72,11 @@ class ImplStudentValueWithError(
 
     @overrides
     def get_CI(self, level: float) -> I_CI:
-        return self._get_CI(self.SE_, level)
+        return self._get_CI(level=level, SE=self.SE_)
 
     @overrides
     def get_CI_from_SD(self, level: float) -> I_CI:
-        return self._get_CI(self.SD, level)
+        return self._get_CI(level=level, SE=self.SD)
 
     @property
     @overrides
@@ -90,7 +89,7 @@ class ImplStudentValueWithError(
     @overrides
     def pretty_repr(
         self,
-        config: ValueWithErrorRepresentationConfig,
+        config: Config,
         absolute_precision_digit: int | None = None,
     ) -> str:
         if absolute_precision_digit is None:
@@ -135,3 +134,15 @@ class ImplStudentValueWithError(
             )
         else:
             raise TypeError(f"Unsupported type for multiplication: {type(other)}")
+
+    @property
+    def SDEstimate(self) -> ImplNormalValueWithError:
+        return ImplNormalValueWithError(value=self.SD, SE=self.SD / np.sqrt(self.N - 1))
+
+    @property
+    def SEEstimate(self) -> ImplNormalValueWithError:
+        return ImplNormalValueWithError(value=self.SE, SE=self.SE / np.sqrt(self.N - 1))
+
+    def __str__(self) -> str:
+        config = Config()
+        return self.pretty_repr(config, self.suggested_precision_digit_pos(config))

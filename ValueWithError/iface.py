@@ -46,7 +46,7 @@ class I_CI(ABC):
     def width(self) -> float:
         return self.upper - self.lower
 
-    def __repr__(self):
+    def __str__(self):
         config = default_value_with_error_repr_config()
         return self.pretty_repr(config, self.suggested_precision_digit_pos(config))
 
@@ -79,7 +79,7 @@ class IValueWithError_Minimal(ABC):
         absolute_precision_digit: int | None = None,
     ) -> str: ...
 
-    def __repr__(self) -> str:
+    def __str__(self) -> str:
         config = default_value_with_error_repr_config()
         return self.pretty_repr(config, self.suggested_precision_digit_pos(config))
 
