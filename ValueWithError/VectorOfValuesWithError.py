@@ -35,7 +35,7 @@ class VectorOfValuesWithError(BaseModel):
         self,
         config: Config | None = None,
         absolute_precision_digit: int | None = None,
-    ) -> str:
+    ) -> list[str]:
         if config is None:
             config = Config()
         if absolute_precision_digit is None:
@@ -65,7 +65,7 @@ class VectorOfValuesWithError(BaseModel):
                 item = make_ValueWithError(item)  # pyright: ignore[reportArgumentType]
             assert isinstance(item, IValueWithError_Minimal)
             ans[i] = item.pretty_repr(config, absolute_precision_digit)
-        return str(ans)
+        return ans
 
     def __len__(self) -> int:
         return len(self.items)
