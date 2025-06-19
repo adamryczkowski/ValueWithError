@@ -3,6 +3,7 @@ from numbers import Number
 import numpy as np
 from pydantic import BaseModel
 
+from .ImplValueWithoutError import ImplValueWithoutError
 from .ValueWithError import UnionOfAllValueWithErrorImpls
 from .constructors import make_ValueWithError
 from .iface import IValueWithError_Minimal
@@ -17,13 +18,25 @@ class VectorOfValuesWithError(BaseModel):
     The main point of this class is to represent the values in a coherent manner, i.e. with shared precision and representation.
     """
 
-    items: list[UnionOfAllValueWithErrorImpls | float]
+    items: list[UnionOfAllValueWithErrorImpls]
+
+    def __init__(self, items: list[UnionOfAllValueWithErrorImpls | float]):
+        super().__init__(items=items)
+        # Ensure all items are of the correct type
+        for item in items:
+            assert isinstance(item, (float, UnionOfAllValueWithErrorImpls))
+        self.items = [  # type: ignore[reportArgumentType]
+            ImplValueWithoutError(value=item) if isinstance(item, float) else item
+            for item in items
+        ]
 
     def table_repr(
         self,
-        config: Config,
+        config: Config | None = None,
         absolute_precision_digit: int | None = None,
     ) -> str:
+        if config is None:
+            config = Config()
         if absolute_precision_digit is None:
             out_precisions: np.ndarray = np.zeros(len(self.items), dtype=int)
             for i, item in enumerate(self.items):
