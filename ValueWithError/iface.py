@@ -3,6 +3,7 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 
 import numpy as np
+from numbers import Number
 
 from .repr_config import (
     ValueWithErrorRepresentationConfig,
@@ -79,6 +80,10 @@ class IValueWithError_Minimal(ABC):
         absolute_precision_digit: int | None = None,
     ) -> str: ...
 
+    @property
+    @abstractmethod
+    def short_description(self) -> str: ...
+
     def __str__(self) -> str:
         config = default_value_with_error_repr_config()
         return self.pretty_repr(config, self.suggested_precision_digit_pos(config))
@@ -131,31 +136,31 @@ class IValueWithError_LinearTransforms(ABC):
 
     @abstractmethod
     def __add__(
-        self, other: IValueWithError_LinearTransforms | float
+        self, other: IValueWithError_LinearTransforms | Number
     ) -> IValueWithError_LinearTransforms: ...
 
     def __sub__(
-        self, other: IValueWithError_LinearTransforms | float
+        self, other: IValueWithError_LinearTransforms | Number
     ) -> IValueWithError_LinearTransforms:
-        return self.__add__(other.__neg__())
+        return self.__add__(other.__neg__())  # type: ignore[return-value]
 
     @abstractmethod
     def __mul__(
-        self, other: IValueWithError_LinearTransforms | float
+        self, other: IValueWithError_LinearTransforms | Number
     ) -> IValueWithError_LinearTransforms: ...
 
     def __radd__(
-        self, other: IValueWithError_LinearTransforms | float
+        self, other: IValueWithError_LinearTransforms | Number
     ) -> IValueWithError_LinearTransforms:
         return self.__add__(other)
 
     def __rsub__(
-        self, other: IValueWithError_LinearTransforms | float
+        self, other: IValueWithError_LinearTransforms | Number
     ) -> IValueWithError_LinearTransforms:
         return self.__neg__().__add__(other)
 
     def __rmul__(
-        self, other: IValueWithError_LinearTransforms | float
+        self, other: IValueWithError_LinearTransforms | Number
     ) -> IValueWithError_LinearTransforms:
         return self.__mul__(other)
 

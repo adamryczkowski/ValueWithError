@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from overrides import overrides
 from pydantic import BaseModel, Field, ConfigDict
+from numbers import Number
 
 from .iface import (
     IValueWithError_Minimal,
@@ -56,32 +57,43 @@ class ImplValueWithoutError(
 
     @overrides
     def __add__(  # pyright: ignore[reportIncompatibleMethodOverride]
-        self, other: IValueWithError_Minimal | float
+        self, other: IValueWithError_Minimal | Number
     ) -> IValueWithError_LinearTransforms:
-        if isinstance(other, float):
-            return ImplValueWithoutError(value=self.value_ + other)
+        if isinstance(other, Number):
+            return ImplValueWithoutError(value=self.value_ + float(other))  # type: ignore[reportArgumentType]
         elif isinstance(other, ImplValueWithoutError):
             return ImplValueWithoutError(value=self.value_ + other.value_)
         elif isinstance(other, IValueWithError_SE):
-            assert isinstance(other, IValueWithError_LinearTransforms)
-            return other.__add__(self)
+            if not isinstance(other, IValueWithError_LinearTransforms):
+                raise ValueError(
+                    f"Addition not supported between {self.short_description} and type {type(other)}"
+                )
+            return other + self
         else:
-            raise TypeError(f"Unsupported type for addition: {type(other)}")
+            raise ValueError(f"Unsupported type for addition: {type(other)}")
 
     @overrides
     def __mul__(  # pyright: ignore[reportIncompatibleMethodOverride]
-        self, other: IValueWithError_Minimal | float
+        self, other: IValueWithError_Minimal | Number
     ) -> IValueWithError_LinearTransforms:
-        if isinstance(other, float):
-            return ImplValueWithoutError(value=self.value_ * other)
+        if isinstance(other, Number):
+            return ImplValueWithoutError(value=self.value_ * float(other))  # type: ignore[reportArgumentType]
         elif isinstance(other, ImplValueWithoutError):
             return ImplValueWithoutError(value=self.value_ * other.value_)
         elif isinstance(other, IValueWithError_SE):
-            assert isinstance(other, IValueWithError_LinearTransforms)
-            return other + self
+            if not isinstance(other, IValueWithError_LinearTransforms):
+                raise ValueError(
+                    f"Multiplication not supported between {self.short_description} and type {type(other)}"
+                )
+            return other * self
         else:
-            raise TypeError(f"Unsupported type for addition: {type(other)}")
+            raise ValueError(f"Unsupported type for addition: {type(other)}")
 
     def __str__(self) -> str:
         config = Config()
         return self.pretty_repr(config, self.suggested_precision_digit_pos(config))
+
+    @property
+    @overrides
+    def short_description(self) -> str:
+        return "value without error"

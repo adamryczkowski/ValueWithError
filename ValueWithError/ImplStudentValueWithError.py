@@ -1,3 +1,5 @@
+from numbers import Number
+
 import numpy as np
 from overrides import overrides
 from pydantic import BaseModel, Field, ConfigDict
@@ -107,33 +109,37 @@ class ImplStudentValueWithError(
 
     @overrides
     def __add__(  # pyright: ignore[reportIncompatibleMethodOverride]
-        self, other: IValueWithError_Minimal | float
+        self, other: IValueWithError_Minimal | Number
     ) -> IValueWithError_LinearTransforms:
-        if isinstance(other, float):
+        if isinstance(other, Number):
             return ImplStudentValueWithError(
-                value=self.value_ + other, SE=self.SE_, N=self.N_
+                value=self.value_ + float(other),  # type: ignore[reportArgumentType]
+                SE=self.SE_,
+                N=self.N_,  # type: ignore[reportArgumentType]
             )
         elif isinstance(other, ImplValueWithoutError):
             return ImplStudentValueWithError(
                 value=self.value_ + other.value_, SE=self.SE_, N=self.N_
             )
         else:
-            raise TypeError(f"Unsupported type for addition: {type(other)}")
+            raise ValueError(f"Unsupported type for addition: {type(other)}")
 
     @overrides
     def __mul__(  # pyright: ignore[reportIncompatibleMethodOverride]
-        self, other: IValueWithError_Minimal | float
+        self, other: IValueWithError_Minimal | Number
     ) -> IValueWithError_LinearTransforms:
-        if isinstance(other, float):
+        if isinstance(other, Number):
             return ImplStudentValueWithError(
-                value=self.value_ * other, SE=self.SE_, N=self.N_
+                value=self.value_ * float(other),  # type: ignore[reportArgumentType]
+                SE=self.SE_,
+                N=self.N_,  # type: ignore[reportArgumentType]
             )
         elif isinstance(other, ImplValueWithoutError):
             return ImplStudentValueWithError(
                 value=self.value_ * other.value_, SE=self.SE_, N=self.N_
             )
         else:
-            raise TypeError(f"Unsupported type for multiplication: {type(other)}")
+            raise ValueError(f"Unsupported type for multiplication: {type(other)}")
 
     @property
     def SDEstimate(self) -> ImplNormalValueWithError:
@@ -146,3 +152,8 @@ class ImplStudentValueWithError(
     def __str__(self) -> str:
         config = Config()
         return self.pretty_repr(config, self.suggested_precision_digit_pos(config))
+
+    @property
+    @overrides
+    def short_description(self) -> str:
+        return "value, standard error and sample size"

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from numbers import Number
 from typing import Union, Optional
 
 import numpy as np
@@ -14,11 +15,12 @@ from .iface import (
     IValueWithError_Estimate,
     IValueWithError_Sample,
     I_CI,
+    IValueWithError_LinearTransforms,
 )
 from .repr_config import ValueWithErrorRepresentationConfig
 
 
-class ValueWithError(BaseModel):
+class ValueWithError(BaseModel, IValueWithError_LinearTransforms):
     obj: Union[
         ImplValueWithoutError,
         ImplNormalValueWithError,
@@ -118,3 +120,50 @@ class ValueWithError(BaseModel):
             )
             obj = self.obj.SEEstimate
         return ValueWithError(obj=obj)
+
+    def __neg__(self) -> IValueWithError_LinearTransforms:
+        if isinstance(self.obj, ImplSampleValueWithError):
+            raise ValueError(
+                "Cannot to arythmetics on sample error. Convert it first to student error with .student_estimate()"
+            )
+        return ValueWithError(obj=-self.obj)  # type: ignore[return-value]
+
+    def __add__(
+        self, other: IValueWithError_LinearTransforms | Number
+    ) -> IValueWithError_LinearTransforms:
+        if isinstance(other, ValueWithError):
+            if isinstance(self.obj, ImplSampleValueWithError) or isinstance(
+                other.obj, ImplSampleValueWithError
+            ):
+                raise ValueError(
+                    "Cannot to arithmetics on sample error. Convert it first to student error with .student_estimate()"
+                )
+            return ValueWithError(obj=self.obj + other.obj)  # type: ignore[return-value]
+        else:
+            if isinstance(self.obj, ImplSampleValueWithError):
+                raise ValueError(
+                    "Cannot to arithmetics on sample error. Convert it first to student error with .student_estimate()"
+                )
+            return ValueWithError(obj=self.obj + other)  # type: ignore[return-value]
+
+    def __mul__(
+        self, other: IValueWithError_LinearTransforms | Number
+    ) -> IValueWithError_LinearTransforms:
+        if isinstance(other, ValueWithError):
+            if isinstance(self.obj, ImplSampleValueWithError) or isinstance(
+                other.obj, ImplSampleValueWithError
+            ):
+                raise ValueError(
+                    "Cannot to arithmetics on sample error. Convert it first to student error with .student_estimate()"
+                )
+            return ValueWithError(obj=self.obj * other.obj)  # type: ignore[return-value]
+        else:
+            if isinstance(self.obj, ImplSampleValueWithError):
+                raise ValueError(
+                    "Cannot to arithmetics on sample error. Convert it first to student error with .student_estimate()"
+                )
+            return ValueWithError(obj=self.obj * other)  # type: ignore[return-value]
+
+    @property
+    def short_description(self) -> str:
+        return self.obj.short_description

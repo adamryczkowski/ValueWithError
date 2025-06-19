@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import numpy as np
+from numbers import Number
 from overrides import overrides
 from pydantic import BaseModel, Field, ConfigDict
 from scipy.stats import norm as norm_dist
@@ -85,10 +86,14 @@ class ImplNormalValueWithError(
 
     @overrides
     def __add__(  # pyright: ignore[reportIncompatibleMethodOverride]
-        self, other: IValueWithError_Minimal | float
+        self, other: IValueWithError_Minimal | Number
     ) -> IValueWithError_LinearTransforms:
-        if isinstance(other, float):
-            return ImplNormalValueWithError(value=self.value_ + other, SE=self.SE_)
+        if isinstance(other, Number):
+            # noinspection PyTypeChecker
+            return ImplNormalValueWithError(
+                value=self.value_ + float(other),  # type: ignore[reportArgumentType]
+                SE=self.SE_,  # type: ignore[reportArgumentType]
+            )
         elif isinstance(other, ImplValueWithoutError):
             return ImplNormalValueWithError(
                 value=self.value_ + other.value_, SE=self.SE_
@@ -99,29 +104,31 @@ class ImplNormalValueWithError(
                 value=self.value_ + other.value_, SE=np.sqrt(self.SE_**2 + other.SE_**2)
             )
         else:
-            raise TypeError(f"Unsupported type for addition: {type(other)}")
+            raise ValueError(f"Unsupported type for addition: {type(other)}")
 
     @overrides
     def __mul__(  # pyright: ignore[reportIncompatibleMethodOverride]
-        self, other: IValueWithError_Minimal | float
+        self, other: IValueWithError_Minimal | Number
     ) -> IValueWithError_LinearTransforms:
-        if isinstance(other, float):
-            return ImplNormalValueWithError(value=self.value_ * other, SE=self.SE_)
+        if isinstance(other, Number):
+            return ImplNormalValueWithError(
+                value=self.value_ * float(other),  # type: ignore[reportArgumentType]
+                SE=self.SE_,  # type: ignore[reportArgumentType]
+            )
         elif isinstance(other, ImplValueWithoutError):
             return ImplNormalValueWithError(
                 value=self.value_ * other.value_, SE=self.SE_
             )
-        elif isinstance(other, ImplNormalValueWithError):
-            # A little controversial, as this implies that the errors are independent
-            return ImplNormalValueWithError(
-                value=self.value_ * other.value_,
-                SE=np.sqrt(
-                    (self.SE_ * other.value_) ** 2 + (self.value_ * other.SE_) ** 2
-                ),
-            )
         else:
-            raise TypeError(f"Unsupported type for multiplication: {type(other)}")
+            raise ValueError(
+                f"Unsupported multiplication between {self.short_description} and {type(other)}"
+            )
 
     def __str__(self) -> str:
         config = Config()
         return self.pretty_repr(config, self.suggested_precision_digit_pos(config))
+
+    @property
+    @overrides
+    def short_description(self) -> str:
+        return "value and standard error"

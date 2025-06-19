@@ -1,5 +1,5 @@
 import warnings
-from math import log, floor, isinf, isnan
+from math import log, ceil, isinf, isnan
 
 import numpy as np
 from pydantic import BaseModel, Field
@@ -85,7 +85,7 @@ def digit_position(value: float) -> int:
     """
     if isinf(value) or isnan(value) or np.isclose(value, 0):
         return 0
-    return -floor(log(abs(value), 10))
+    return ceil(-log(abs(value), 10))
 
 
 def suggested_precision_digit_pos(
@@ -120,12 +120,14 @@ def round_to_string(
 
     if detect_integers:
         if value.is_integer():
+            if value < 0:
+                return f"–{int(-value)}"
             return str(int(value))
+    rvalue = round(abs(value), absolute_digit_pos)
+    add_minus = "–" if value < 0 else ""
     if pad_with_zeroes:
-        return format(
-            round(value, absolute_digit_pos), "." + str(absolute_digit_pos) + "f"
-        )
-    return str(round(value, absolute_digit_pos))
+        return add_minus + format(rvalue, "." + str(absolute_digit_pos) + "f")
+    return add_minus + str(round(value, absolute_digit_pos))
 
 
 def suggested_precision_digit_pos_for_SE(
@@ -166,7 +168,7 @@ def repr_value_with_error(
 
     if SE is not None and config.show_se and not config.show_ci_as_plusminus:
         round_SE_txt = round_to_string(
-            SE, absolute_digit_pos, pad_with_zeroes=False, detect_integers=False
+            SE, absolute_digit_pos, pad_with_zeroes=True, detect_integers=False
         )
         return f"{round_value_txt} ± {round_SE_txt}"
 

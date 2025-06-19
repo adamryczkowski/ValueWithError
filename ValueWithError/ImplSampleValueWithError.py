@@ -103,3 +103,8 @@ class ImplSampleValueWithError(IValueWithError_Sample, BaseModel):
     def __str__(self) -> str:
         config = Config()
         return self.pretty_repr(config, self.suggested_precision_digit_pos(config))
+
+    @property
+    @overrides
+    def short_description(self) -> str:
+        return f"continuous sample of size {self.N} with mean {self}"
