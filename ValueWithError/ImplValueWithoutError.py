@@ -40,7 +40,10 @@ class ImplValueWithoutError(
         if absolute_precision_digit is None:
             absolute_precision_digit = self.suggested_precision_digit_pos(config)
         return round_to_string(
-            self.value, absolute_precision_digit, config.pad_raw_value_with_zeros
+            self.value,
+            absolute_precision_digit,
+            config.pad_raw_value_with_zeros,
+            config.detect_integers,
         )
 
     @overrides

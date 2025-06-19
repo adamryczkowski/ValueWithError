@@ -28,5 +28,15 @@ def test1():
     assert str(c.SEEstimate) == "1.13 ± 0.11"
 
 
+def test_for_integer():
+    """Test that ValueWithError can handle integer values correctly."""
+    v = ValueWithError.make_ValueWithError(0.1)
+    assert str(v) == "0.1"
+    v = ValueWithError.make_ValueWithError(1.0)
+    assert str(v) == "1"
+    assert v.pretty_repr(Config(detect_integers=False)) == "1.0"
+
+
 if __name__ == "__main__":
+    test_for_integer()
     test1()

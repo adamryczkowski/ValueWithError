@@ -8,6 +8,10 @@ from pydantic import BaseModel, Field
 class ValueWithErrorRepresentationConfig(BaseModel):
     show_cis: bool = Field(default=True, description="Show confidence intervals")
     show_se: bool = Field(default=True, description="Show error")
+    detect_integers: bool = Field(
+        default=True,
+        description="Detect integers and display them without decimal point",
+    )
     prefer_sd: bool = Field(
         default=False, description="Prefer standard deviation over standard error"
     )
@@ -31,6 +35,7 @@ class ValueWithErrorRepresentationConfig(BaseModel):
         show_cis: bool = True,
         show_se: bool = True,
         prefer_sd: bool = False,
+        detect_integers=True,
         show_ci_as_plusminus: bool = False,
         significant_digit_se: int = 2,
         significant_digit_bare: int = 4,
@@ -40,6 +45,7 @@ class ValueWithErrorRepresentationConfig(BaseModel):
             show_cis=show_cis,
             show_se=show_se,
             prefer_sd=prefer_sd,
+            detect_integers=detect_integers,
             show_ci_as_plusminus=show_ci_as_plusminus,
             significant_digit_se=significant_digit_se,
             significant_digit_bare=significant_digit_bare,
@@ -93,7 +99,7 @@ def suggested_precision_digit_pos(
 
 
 def round_to_string(
-    value: float, absolute_digit_pos: int, pad_with_zeroes: bool = False
+    value: float, absolute_digit_pos: int, pad_with_zeroes: bool, detect_integers: bool
 ) -> str:
     """
     :param value: The value to represent.
@@ -109,15 +115,17 @@ def round_to_string(
     if isnan(value):
         return "NaN"
 
-    if absolute_digit_pos > 0 and pad_with_zeroes:
+    if absolute_digit_pos <= 0:
+        return str(int(round(value, absolute_digit_pos)))
+
+    if detect_integers:
+        if value.is_integer():
+            return str(int(value))
+    if pad_with_zeroes:
         return format(
             round(value, absolute_digit_pos), "." + str(absolute_digit_pos) + "f"
         )
-    else:
-        if absolute_digit_pos > 0:
-            return str(round(value, absolute_digit_pos))
-        else:
-            return str(int(round(value, absolute_digit_pos)))
+    return str(round(value, absolute_digit_pos))
 
 
 def suggested_precision_digit_pos_for_SE(
@@ -149,11 +157,17 @@ def repr_value_with_error(
             SE = None
 
     round_value_txt = round_to_string(
-        mean, absolute_digit_pos, config.pad_raw_value_with_zeros or SE is not None
+        mean,
+        absolute_digit_pos,
+        config.pad_raw_value_with_zeros or SE is not None,
+        detect_integers=config.detect_integers
+        and SE is None,  # We detect integers only if SE is None
     )
 
     if SE is not None and config.show_se and not config.show_ci_as_plusminus:
-        round_SE_txt = round_to_string(SE, absolute_digit_pos)
+        round_SE_txt = round_to_string(
+            SE, absolute_digit_pos, pad_with_zeroes=False, detect_integers=False
+        )
         return f"{round_value_txt} ± {round_SE_txt}"
 
     return f"{round_value_txt}"
@@ -198,10 +212,16 @@ def CI_repr(
         assert lower <= upper
 
     round_lower_txt = round_to_string(
-        lower, absolute_digit_pos, pad_with_zeroes=config.pad_raw_value_with_zeros
+        lower,
+        absolute_digit_pos,
+        pad_with_zeroes=config.pad_raw_value_with_zeros,
+        detect_integers=False,
     )
     round_upper_txt = round_to_string(
-        upper, absolute_digit_pos, pad_with_zeroes=config.pad_raw_value_with_zeros
+        upper,
+        absolute_digit_pos,
+        pad_with_zeroes=config.pad_raw_value_with_zeros,
+        detect_integers=False,
     )
 
     return f"({round_lower_txt}, {round_upper_txt})"
