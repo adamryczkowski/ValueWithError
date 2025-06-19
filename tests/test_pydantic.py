@@ -1,14 +1,41 @@
-from ValueWithError import ValueWithError, make_ValueWithError
+from ValueWithError import (
+    ValueWithError,
+    make_ValueWithError,
+    make_ValueWithError_from_vector,
+)
 from pydantic import BaseModel
-from ValueWithError.ImplValueWithoutError import ImplValueWithoutError
+import numpy as np
 
 
-def test_basie():
-    obj = ImplValueWithoutError(value=10)
-    json = obj.model_dump_json(by_alias=True)
-    print(f"Serialized object {repr(obj)}: {json}")
-    obj2 = ImplValueWithoutError.model_validate_json(json)
-    assert repr(obj) == repr(obj2)
+# def test_basic():
+#     obj = ImplValueWithoutError(value=10)
+#     json = obj.model_dump_json(by_alias=True)
+#     print(f"Serialized object {repr(obj)}: {json}")
+#     obj2 = ImplValueWithoutError.model_validate_json(json)
+#     assert repr(obj) == repr(obj2)
+
+
+def test_api():
+    v1 = make_ValueWithError(1.0)
+    v2 = make_ValueWithError(1.0, SE=1)
+    v3 = make_ValueWithError(1.0, SE=1, N=10)
+    v4 = make_ValueWithError_from_vector(np.asarray([1.0, 2.0, 3.0]))
+
+    s1 = v1.model_dump_json()
+    o1 = ValueWithError.model_validate_json(s1)
+    assert o1 == v1
+
+    s2 = v2.model_dump_json()
+    o2 = ValueWithError.model_validate_json(s2)
+    assert o2 == v2
+
+    s3 = v3.model_dump_json()
+    o3 = ValueWithError.model_validate_json(s3)
+    assert o3 == v3
+
+    s4 = v4.model_dump_json()
+    o4 = ValueWithError.model_validate_json(s4)
+    assert str(o4) == str(v4)
 
 
 def test1():
@@ -74,7 +101,7 @@ def test1():
 #
 #
 if __name__ == "__main__":
-    test_basie()
+    test_api()
     test1()
     # test2()
     # test3()

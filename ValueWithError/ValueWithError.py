@@ -19,14 +19,16 @@ from .iface import (
 )
 from .repr_config import ValueWithErrorRepresentationConfig
 
+UnionOfAllValueWithErrorImpls = Union[
+    ImplSampleValueWithError,
+    ImplValueWithoutError,
+    ImplNormalValueWithError,
+    ImplStudentValueWithError,
+]
+
 
 class ValueWithError(BaseModel, IValueWithError_LinearTransforms):
-    obj: Union[
-        ImplValueWithoutError,
-        ImplNormalValueWithError,
-        ImplStudentValueWithError,
-        ImplSampleValueWithError,
-    ]
+    obj: UnionOfAllValueWithErrorImpls
 
     def suggested_precision_digit_pos(
         self, config: ValueWithErrorRepresentationConfig

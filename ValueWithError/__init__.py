@@ -9,6 +9,7 @@ from .iface import (
     I_CI,
 )
 from .ValueWithError import ValueWithError
+from .VectorOfValuesWithError import VectorOfValuesWithError
 from .CI import CI_95, CI_any
 
 __all__ = [
@@ -25,4 +26,5 @@ __all__ = [
     "CI_95",
     "CI_any",
     "ValueWithError",
+    "VectorOfValuesWithError",
 ]

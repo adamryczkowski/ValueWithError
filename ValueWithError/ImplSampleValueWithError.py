@@ -20,7 +20,7 @@ class ImplSampleValueWithError(IValueWithError_Sample, BaseModel):
     """Class that remembers all the individual values that makes the mean and SE."""
 
     sample_: NDArraySerializer = Field(alias="sample")
-    model_config = ConfigDict(arbitrary_types_allowed=True)
+    model_config = ConfigDict(arbitrary_types_allowed=True, serialize_by_alias=True)
 
     # def __init__(self, sample: np.ndarray, **kwargs):
     #     super().__init__(sample_=sample, **kwargs)
@@ -108,3 +108,8 @@ class ImplSampleValueWithError(IValueWithError_Sample, BaseModel):
     @overrides
     def short_description(self) -> str:
         return f"continuous sample of size {self.N} with mean {self}"
+
+    # @field_validator("sample_", mode='before')
+    # @classmethod
+    # def validate_sample(cls, v: Any) -> np.ndarray:
+    #     return nd_array_before_validator(v)

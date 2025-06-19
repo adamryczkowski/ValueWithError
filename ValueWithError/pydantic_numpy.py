@@ -7,6 +7,9 @@ from pydantic import BeforeValidator, PlainSerializer
 
 def nd_array_before_validator(x):
     # custom before validation logic
+    print("#######################")
+    print(f"{x}")
+    print(f"{type(x)}")
     if isinstance(x, str):
         x_list = ast.literal_eval(x)
         x = np.array(x_list)
