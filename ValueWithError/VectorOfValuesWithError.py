@@ -1,4 +1,5 @@
 from numbers import Number
+from typing import Iterator
 
 import numpy as np
 from pydantic import BaseModel
@@ -65,3 +66,12 @@ class VectorOfValuesWithError(BaseModel):
             assert isinstance(item, IValueWithError_Minimal)
             ans[i] = item.pretty_repr(config, absolute_precision_digit)
         return str(ans)
+
+    def __len__(self) -> int:
+        return len(self.items)
+
+    def __getitem__(self, index: int) -> UnionOfAllValueWithErrorImpls:
+        return self.items[index]
+
+    def __iter__(self) -> Iterator[UnionOfAllValueWithErrorImpls]:  # type: ignore[override]
+        return iter(self.items)
