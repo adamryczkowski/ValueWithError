@@ -1,7 +1,6 @@
 from numbers import Number
 from typing import Iterator
 
-import numpy as np
 from pydantic import BaseModel
 
 from .ImplValueWithoutError import ImplValueWithoutError
@@ -43,18 +42,21 @@ class VectorOfValuesWithError(BaseModel):
                 detect_integers=False,
             )
         if absolute_precision_digit is None:
-            out_precisions: np.ndarray = np.zeros(len(self.items), dtype=int)
+            out_precisions: list[int] = []
             for i, item in enumerate(self.items):
                 if isinstance(item, Number):
                     # noinspection PyTypeChecker
                     item = float(item)  # pyright: ignore[reportArgumentType]
-                    out_precisions[i] = suggested_precision_digit_pos(
-                        item, config, False
-                    )
+                    precision = suggested_precision_digit_pos(item, config, False)
+                    if precision is not None:
+                        out_precisions.append(precision)
                     continue
                 assert isinstance(item, IValueWithError_Minimal)
-                out_precisions[i] = item.suggested_precision_digit_pos(config)
-
+                precision = item.suggested_precision_digit_pos(config)
+                if precision is not None:
+                    out_precisions.append(precision)
+            if len(out_precisions) == 0:
+                out_precisions = [0]
             # We need to gather the precisions - probably find the some lower centile of it, and use it throughout
             out_precisions.sort()
             quantile = 0.8
