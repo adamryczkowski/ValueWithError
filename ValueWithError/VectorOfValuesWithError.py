@@ -22,14 +22,14 @@ class VectorOfValuesWithError(BaseModel):
     items: list[UnionOfAllValueWithErrorImpls]
 
     def __init__(self, items: list[UnionOfAllValueWithErrorImpls | float]):
-        super().__init__(items=items)
         # Ensure all items are of the correct type
         for item in items:
             assert isinstance(item, (float, UnionOfAllValueWithErrorImpls))
-        self.items = [  # type: ignore[reportArgumentType]
+        items = [  # type: ignore[reportArgumentType]
             ImplValueWithoutError(value=item) if isinstance(item, float) else item
             for item in items
         ]
+        super().__init__(items=items)
 
     def table_repr(
         self,
@@ -37,7 +37,11 @@ class VectorOfValuesWithError(BaseModel):
         absolute_precision_digit: int | None = None,
     ) -> list[str]:
         if config is None:
-            config = Config()
+            config = Config(
+                pad_raw_value_with_zeros=True,
+                significant_digit_bare=2,
+                detect_integers=False,
+            )
         if absolute_precision_digit is None:
             out_precisions: np.ndarray = np.zeros(len(self.items), dtype=int)
             for i, item in enumerate(self.items):

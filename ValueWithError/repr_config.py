@@ -119,10 +119,10 @@ def round_to_string(
         return str(int(round(value, absolute_digit_pos)))
 
     if detect_integers:
-        if value.is_integer():
+        if np.isclose(value, round(value)):
             if value < 0:
-                return f"–{int(-value)}"
-            return str(int(value))
+                return f"–{round(-value)}"
+            return str(round(value))
     rvalue = round(abs(value), absolute_digit_pos)
     add_minus = "–" if value < 0 else ""
     if pad_with_zeroes:
