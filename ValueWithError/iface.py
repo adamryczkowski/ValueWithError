@@ -67,7 +67,7 @@ class IValueWithError_Minimal(ABC):
     @abstractmethod
     def suggested_precision_digit_pos(
         self, config: ValueWithErrorRepresentationConfig
-    ) -> int: ...
+    ) -> int | None: ...
 
     @property
     @abstractmethod

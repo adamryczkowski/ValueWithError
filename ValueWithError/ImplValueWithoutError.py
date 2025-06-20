@@ -40,15 +40,18 @@ class ImplValueWithoutError(
     ) -> str:
         if absolute_precision_digit is None:
             absolute_precision_digit = self.suggested_precision_digit_pos(config)
+        if absolute_precision_digit is None:
+            absolute_precision_digit = config.significant_digit_bare - 1
         return round_to_string(
             self.value,
             absolute_precision_digit,
             config.pad_raw_value_with_zeros,
             config.detect_integers,
+            config.inf_threshold,
         )
 
     @overrides
-    def suggested_precision_digit_pos(self, config: Config) -> int:
+    def suggested_precision_digit_pos(self, config: Config) -> int | None:
         return suggested_precision_digit_pos(self.value_, config, False)
 
     @overrides

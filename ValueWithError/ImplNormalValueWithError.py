@@ -42,7 +42,7 @@ class ImplNormalValueWithError(
         return self.value_
 
     @overrides
-    def suggested_precision_digit_pos(self, config: Config) -> int:
+    def suggested_precision_digit_pos(self, config: Config) -> int | None:
         return suggested_precision_digit_pos_for_SE(self.value_, self.SE_, config)
 
     @overrides
@@ -76,6 +76,8 @@ class ImplNormalValueWithError(
     ) -> str:
         if absolute_precision_digit is None:
             absolute_precision_digit = self.suggested_precision_digit_pos(config)
+        if absolute_precision_digit is None:
+            absolute_precision_digit = config.significant_digit_bare - 1
         return repr_value_with_error(
             self.value_, self.SE_, absolute_precision_digit, config
         )

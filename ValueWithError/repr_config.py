@@ -28,6 +28,10 @@ class ValueWithErrorRepresentationConfig(BaseModel):
         default=False,
         description="Pad raw value (i.e. without SE) with zeros up to the required precision",
     )
+    inf_threshold: float = Field(
+        default=1e16,
+        description="Threshold for considering a value as infinity. Values larger than this will be represented as '∞'.",
+    )
 
     # __init__ is redundant, but needed to get PyCharm completion (as of May 2025)
     def __init__(
@@ -40,6 +44,7 @@ class ValueWithErrorRepresentationConfig(BaseModel):
         significant_digit_se: int = 2,
         significant_digit_bare: int = 4,
         pad_raw_value_with_zeros: bool = False,
+        inf_threshold: float = 1e16,
     ):
         super().__init__(
             show_cis=show_cis,
@@ -50,6 +55,7 @@ class ValueWithErrorRepresentationConfig(BaseModel):
             significant_digit_se=significant_digit_se,
             significant_digit_bare=significant_digit_bare,
             pad_raw_value_with_zeros=pad_raw_value_with_zeros,
+            inf_threshold=inf_threshold,
         )
 
 
@@ -90,23 +96,29 @@ def digit_position(value: float) -> int:
 
 def suggested_precision_digit_pos(
     value: float, config: ValueWithErrorRepresentationConfig, value_is_SE_or_SD: bool
-) -> int:
+) -> int | None:
     """
     Returns the suggested precision digit position that works for all the values in the list.
     """
-
+    if abs(value) > config.inf_threshold:
+        # If the value is larger than the threshold, we consider it as infinity
+        return None
     return absolute_rounding_digit(digit_position(value), value_is_SE_or_SD, config)
 
 
 def round_to_string(
-    value: float, absolute_digit_pos: int, pad_with_zeroes: bool, detect_integers: bool
+    value: float,
+    absolute_digit_pos: int,
+    pad_with_zeroes: bool,
+    detect_integers: bool,
+    inf_threshold: float,
 ) -> str:
     """
     :param value: The value to represent.
     :param absolute_digit_pos: The absolute position of the least significant digit to retain in the representation.
     :param pad_with_zeroes: Only if absolute_digit>0. If True, pad with zeroes to the right of the decimal point.
     """
-    if isinf(value):
+    if isinf(value) or abs(value) > inf_threshold:
         if value > 0:
             return "∞"
         else:
@@ -132,8 +144,11 @@ def round_to_string(
 
 def suggested_precision_digit_pos_for_SE(
     mean: float, SE: float | None, config: ValueWithErrorRepresentationConfig
-) -> int:
+) -> int | None:
     if SE is None or isnan(SE) or isinf(SE) or np.isclose(SE, 0):
+        if abs(mean) > config.inf_threshold:
+            # If the value is larger than the threshold, we consider it as infinity
+            return None
         return suggested_precision_digit_pos(mean, config, False)
 
     return absolute_rounding_digit(digit_position(SE), True, config)
@@ -164,11 +179,16 @@ def repr_value_with_error(
         config.pad_raw_value_with_zeros or SE is not None,
         detect_integers=config.detect_integers
         and SE is None,  # We detect integers only if SE is None
+        inf_threshold=config.inf_threshold,
     )
 
     if SE is not None and config.show_se and not config.show_ci_as_plusminus:
         round_SE_txt = round_to_string(
-            SE, absolute_digit_pos, pad_with_zeroes=True, detect_integers=False
+            SE,
+            absolute_digit_pos,
+            pad_with_zeroes=True,
+            detect_integers=False,
+            inf_threshold=config.inf_threshold,
         )
         return f"{round_value_txt} ± {round_SE_txt}"
 
@@ -201,7 +221,9 @@ def suggested_precision_digit_pos_for_CI(
             return 0
         else:
             return max(absolute_digits)
-    return suggested_precision_digit_pos(SE, config, True)
+    ans = suggested_precision_digit_pos(SE, config, True)
+    assert ans is not None
+    return ans
 
 
 def CI_repr(
@@ -218,12 +240,14 @@ def CI_repr(
         absolute_digit_pos,
         pad_with_zeroes=config.pad_raw_value_with_zeros,
         detect_integers=False,
+        inf_threshold=config.inf_threshold,
     )
     round_upper_txt = round_to_string(
         upper,
         absolute_digit_pos,
         pad_with_zeroes=config.pad_raw_value_with_zeros,
         detect_integers=False,
+        inf_threshold=config.inf_threshold,
     )
 
     return f"({round_lower_txt}, {round_upper_txt})"

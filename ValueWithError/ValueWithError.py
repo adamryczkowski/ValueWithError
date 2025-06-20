@@ -32,7 +32,7 @@ class ValueWithError(BaseModel, IValueWithError_LinearTransforms):
 
     def suggested_precision_digit_pos(
         self, config: ValueWithErrorRepresentationConfig
-    ) -> int:
+    ) -> int | None:
         return self.obj.suggested_precision_digit_pos(config)
 
     @property

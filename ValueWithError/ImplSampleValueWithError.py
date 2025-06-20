@@ -55,7 +55,7 @@ class ImplSampleValueWithError(IValueWithError_Sample, BaseModel):
         return float(self.SD / np.sqrt(self.N))
 
     @overrides
-    def suggested_precision_digit_pos(self, config: Config) -> int:
+    def suggested_precision_digit_pos(self, config: Config) -> int | None:
         return suggested_precision_digit_pos_for_SE(
             self.value, self.SD if config.prefer_sd else self.SE, config
         )
@@ -68,6 +68,8 @@ class ImplSampleValueWithError(IValueWithError_Sample, BaseModel):
     ) -> str:
         if absolute_precision_digit is None:
             absolute_precision_digit = self.suggested_precision_digit_pos(config)
+        if absolute_precision_digit is None:
+            absolute_precision_digit = config.significant_digit_bare - 1
         if config.prefer_sd:
             return repr_value_with_error(
                 self.value, self.SD, absolute_precision_digit, config
